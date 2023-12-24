@@ -165,7 +165,7 @@ public class ArgumentError : ExceptionError
     public ArgumentError(ArgumentException ex)
         : base(ex)
     {
-        this.ParamName = ex.ParamName;
+        this.ParamName = ex.ParamName ?? string.Empty;
     }
 
     public string ParamName { get; set; }

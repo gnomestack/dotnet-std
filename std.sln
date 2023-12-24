@@ -9,6 +9,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GnomeStack.Core", "src\Core
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GnomeStack.Internal", "src\Internal\GnomeStack.Internal.csproj", "{35663030-4C79-47A7-9B5C-74EF882D5EB1}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{0C012F9A-99ED-41B8-9479-090D9A4A93E0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GnomeStack.Core.Tests", "test\Core.Tests\GnomeStack.Core.Tests.csproj", "{C6614E54-E205-4B94-9D05-A11A0A75DDC9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -26,9 +30,14 @@ Global
 		{35663030-4C79-47A7-9B5C-74EF882D5EB1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{35663030-4C79-47A7-9B5C-74EF882D5EB1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{35663030-4C79-47A7-9B5C-74EF882D5EB1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C6614E54-E205-4B94-9D05-A11A0A75DDC9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C6614E54-E205-4B94-9D05-A11A0A75DDC9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C6614E54-E205-4B94-9D05-A11A0A75DDC9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C6614E54-E205-4B94-9D05-A11A0A75DDC9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{DCDE1264-EB6D-413B-BBB4-7CD84FCB85BF} = {8EA5C612-E577-41A4-97C4-BD55D89E7876}
 		{35663030-4C79-47A7-9B5C-74EF882D5EB1} = {8EA5C612-E577-41A4-97C4-BD55D89E7876}
+		{C6614E54-E205-4B94-9D05-A11A0A75DDC9} = {0C012F9A-99ED-41B8-9479-090D9A4A93E0}
 	EndGlobalSection
 EndGlobal

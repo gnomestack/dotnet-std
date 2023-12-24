@@ -57,7 +57,7 @@
     <Linux>false</Linux>
     <MacOs>false</MacOs>
     <RootDir>$(MSBuildThisFileDirectory.TrimEnd("/"))</RootDir>
-    <BclDir>$(RootDir)/bcl/src</BclDir>
+    <SrcDir>$(RootDir)/src</SrcDir>
     <InternalDir>$(MSBuildThisFileDirectory)src/Internal</InternalDir>
     <ArtifactsDir>$(MSBuildThisFileDirectory).artifacts</ArtifactsDir>
     <IconPath>$(MSBuildThisFileDirectory)assets/icon.png</IconPath>
