@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{8EA5C612-E577-41A4-97C4-BD55D89E7876}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GnomeStack.Core", "src\Core\GnomeStack.Core.csproj", "{DCDE1264-EB6D-413B-BBB4-7CD84FCB85BF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GnomeStack.Internal", "src\Internal\GnomeStack.Internal.csproj", "{35663030-4C79-47A7-9B5C-74EF882D5EB1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DCDE1264-EB6D-413B-BBB4-7CD84FCB85BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DCDE1264-EB6D-413B-BBB4-7CD84FCB85BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DCDE1264-EB6D-413B-BBB4-7CD84FCB85BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DCDE1264-EB6D-413B-BBB4-7CD84FCB85BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{35663030-4C79-47A7-9B5C-74EF882D5EB1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{35663030-4C79-47A7-9B5C-74EF882D5EB1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{35663030-4C79-47A7-9B5C-74EF882D5EB1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{35663030-4C79-47A7-9B5C-74EF882D5EB1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{DCDE1264-EB6D-413B-BBB4-7CD84FCB85BF} = {8EA5C612-E577-41A4-97C4-BD55D89E7876}
+		{35663030-4C79-47A7-9B5C-74EF882D5EB1} = {8EA5C612-E577-41A4-97C4-BD55D89E7876}
+	EndGlobalSection
+EndGlobal
