@@ -31,7 +31,7 @@ public static class ProcessExtensions
     }
 #endif
 
-    public static Result<PsOutput, Exception> ValidateExitCode(this Result<PsOutput, Exception> result)
+    public static ValueResult<PsOutput, Exception> ValidateExitCode(this ValueResult<PsOutput, Exception> result)
     {
         if (result.IsOkAnd(o => o.ExitCode != 0))
         {
@@ -42,7 +42,7 @@ public static class ProcessExtensions
         return result;
     }
 
-    public static Result<PsOutput, Exception> ValidateExitCode(this Result<PsOutput, Exception> result, int validCode)
+    public static ValueResult<PsOutput, Exception> ValidateExitCode(this ValueResult<PsOutput, Exception> result, int validCode)
     {
         if (result.IsOkAnd(o => o.ExitCode != validCode))
         {
@@ -53,8 +53,8 @@ public static class ProcessExtensions
         return result;
     }
 
-    public static Result<PsOutput, Exception> ValidateExitCode(
-        this Result<PsOutput, Exception> result,
+    public static ValueResult<PsOutput, Exception> ValidateExitCode(
+        this ValueResult<PsOutput, Exception> result,
         int validCode,
         Func<string> createMessage)
     {

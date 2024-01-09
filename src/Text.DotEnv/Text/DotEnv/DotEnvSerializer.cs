@@ -162,7 +162,7 @@ public static class DotEnvSerializer
             {
                 if (entry is EnvNameValuePair pair)
                 {
-                    var v = Env.Expand(pair.RawValue, eso);
+                    var v = Env.ExpandVars(pair.RawValue, eso);
 
                     // Only set the value if it has changed.
                     if (v.Length != pair.RawValue.Length || !v.SequenceEqual(pair.RawValue))

@@ -57,7 +57,7 @@ public partial class Ps
 
         for (var i = 0; i < pathSegments.Count; i++)
         {
-            pathSegments[i] = Env.Expand(pathSegments[i]);
+            pathSegments[i] = Env.ExpandVars(pathSegments[i]);
         }
 
         foreach (var pathSegment in pathSegments)

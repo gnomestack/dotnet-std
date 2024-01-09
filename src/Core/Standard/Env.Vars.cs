@@ -1,8 +1,10 @@
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices;
 using System.Text;
 
 using GnomeStack.Extras.Strings;
+using GnomeStack.Functional;
 
 namespace GnomeStack.Standard;
 
@@ -10,60 +12,31 @@ public static partial class Env
 {
     public static EnvVars Vars { get; } = new EnvVars();
 
-    public static string? Get(string name)
-    {
-        return Environment.GetEnvironmentVariable(name);
-    }
+    public static Option<string> OptionalVar(string name)
+        => Option.From(Environment.GetEnvironmentVariable(name));
 
-    public static string? Get(string name, EnvironmentVariableTarget target)
-    {
-        return Environment.GetEnvironmentVariable(name, target);
-    }
+    public static string? Var(string name)
+        => Environment.GetEnvironmentVariable(name);
 
-    public static string GetRequired(string name)
-    {
-        var value = Environment.GetEnvironmentVariable(name);
-        if (value == null)
-            throw new KeyNotFoundException($"Environment variable '{name}' not found.");
+    public static string? Var(string name, EnvironmentVariableTarget target)
+        => Environment.GetEnvironmentVariable(name);
 
-        return value;
-    }
+    public static void SetVar(string name, string value)
+        => Environment.SetEnvironmentVariable(name, value);
 
-    public static bool Has(string name)
-    {
-        return Environment.GetEnvironmentVariable(name) != null;
-    }
+    public static void SetVar(string name, string value, EnvironmentVariableTarget target)
+        => Environment.SetEnvironmentVariable(name, value, target);
 
-    public static void Remove(string name)
-    {
-        Environment.SetEnvironmentVariable(name, null);
-    }
+    public static void RemoveVar(string name)
+        => Environment.SetEnvironmentVariable(name, null);
 
-    public static void Remove(string name, EnvironmentVariableTarget target)
-    {
-        Environment.SetEnvironmentVariable(name, null, target);
-    }
-
-    public static void Set(string name, string value)
-    {
-        Environment.SetEnvironmentVariable(name, value);
-    }
-
-    public static void Set(string name, string value, EnvironmentVariableTarget target)
-    {
-        Environment.SetEnvironmentVariable(name, value, target);
-    }
-
-    public static bool TryGet(string name, [NotNullWhen(true)] out string? value)
-    {
-        value = Environment.GetEnvironmentVariable(name);
-        return value != null;
-    }
+    public static void RemoveVar(string name, EnvironmentVariableTarget target)
+        => Environment.SetEnvironmentVariable(name, null, target);
 
     public static IEnumerable<string> SplitPath(EnvironmentVariableTarget target = EnvironmentVariableTarget.Process)
     {
         var name = IsWindows ? "Path" : "PATH";
-        var path = Get(name, target) ?? string.Empty;
+        var path = Var(name, target) ?? string.Empty;
         return path.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries);
     }
 
@@ -90,8 +63,107 @@ public static partial class Env
 
         public string? this[string name]
         {
-            get => Env.Get(name);
-            set => Env.Set(name, value ?? string.Empty);
+            get => Environment.GetEnvironmentVariable(name);
+            set => Environment.SetEnvironmentVariable(name, value);
+        }
+
+        public bool Contains(string name)
+            => Environment.GetEnvironmentVariable(name) != null;
+
+        public bool Contains(string name, EnvironmentVariableTarget target)
+        {
+            switch (target)
+            {
+                case EnvironmentVariableTarget.Process:
+                    return Environment.GetEnvironmentVariable(name) != null;
+
+                case EnvironmentVariableTarget.Machine:
+                    {
+                        if (Os.IsWindows())
+                            return Environment.GetEnvironmentVariable(name, target) != null;
+
+                        throw new PlatformNotSupportedException("Machine environment variables is only available on Windows.");
+                    }
+
+                case EnvironmentVariableTarget.User:
+                    {
+                        if (Os.IsWindows())
+                            return Environment.GetEnvironmentVariable(name, target) != null;
+
+                        throw new PlatformNotSupportedException("User environment variables is only available on Windows.");
+                    }
+            }
+
+            return false;
+        }
+
+        public string Expand(string template, EnvExpandOptions? options = null)
+            => Env.ExpandVars(template, options);
+
+        public ReadOnlySpan<char> Expand(ReadOnlySpan<char> template, EnvExpandOptions? options = null)
+            => Env.ExpandVars(template, options);
+
+        public string? Get(string name)
+            => Environment.GetEnvironmentVariable(name);
+
+        public string? Get(string name, EnvironmentVariableTarget target)
+        {
+            switch (target)
+            {
+                case EnvironmentVariableTarget.Process:
+                    return Environment.GetEnvironmentVariable(name);
+
+                case EnvironmentVariableTarget.Machine:
+                    {
+                        if (Os.IsWindows())
+                            return Environment.GetEnvironmentVariable(name, target);
+
+                        throw new PlatformNotSupportedException("Machine environment variables is only available on Windows.");
+                    }
+
+                case EnvironmentVariableTarget.User:
+                    {
+                        if (Os.IsWindows())
+                            return Environment.GetEnvironmentVariable(name, target);
+
+                        throw new PlatformNotSupportedException("User environment variables is only available on Windows.");
+                    }
+            }
+
+            return null;
+        }
+
+        public Option<string> GetOptional(string name)
+        {
+            var value = Environment.GetEnvironmentVariable(name);
+            return Option.From(value);
+        }
+
+        public string GetRequired(string name)
+        {
+            var value = Environment.GetEnvironmentVariable(name);
+            if (value == null)
+                throw new KeyNotFoundException($"Environment variable '{name}' not found.");
+
+            return value;
+        }
+
+        public void Remove(string name)
+            => Environment.SetEnvironmentVariable(name, null);
+
+        public void Remove(string name, EnvironmentVariableTarget target)
+            => Environment.SetEnvironmentVariable(name, null, target);
+
+        public void Set(string name, string value)
+            => Environment.SetEnvironmentVariable(name, value);
+
+        public void Set(string name, string value, EnvironmentVariableTarget target)
+            => Environment.SetEnvironmentVariable(name, value, target);
+
+        public bool TryGet(string name, [NotNullWhen(true)] out string? value)
+        {
+            value = Environment.GetEnvironmentVariable(name);
+            return value != null;
         }
 
         public IEnumerator<KeyValuePair<string, string>> GetEnumerator()

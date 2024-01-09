@@ -74,7 +74,7 @@ public class PsPathRegistry
         return path;
     }
 
-    public Result<string, FileNotFoundException> FindAsResult(string name)
+    public ValueResult<string, FileNotFoundException> FindAsResult(string name)
     {
         var path = this.Find(name);
         if (path is null)
@@ -139,7 +139,7 @@ public class PsPathRegistry
             foreach (var attempt in entry.Windows)
             {
                 exe = attempt;
-                exe = Env.Expand(exe);
+                exe = Env.ExpandVars(exe);
                 exe = Ps.Which(exe);
                 if (exe is null)
                 {
@@ -159,7 +159,7 @@ public class PsPathRegistry
             foreach (var attempt in entry.Darwin)
             {
                 exe = attempt;
-                exe = Env.Expand(exe);
+                exe = Env.ExpandVars(exe);
                 exe = Ps.Which(exe);
                 if (exe is null)
                 {
@@ -175,7 +175,7 @@ public class PsPathRegistry
         foreach (var attempt in entry.Linux)
         {
             exe = attempt;
-            exe = Env.Expand(exe);
+            exe = Env.ExpandVars(exe);
             exe = Ps.Which(exe);
             if (exe is null)
             {

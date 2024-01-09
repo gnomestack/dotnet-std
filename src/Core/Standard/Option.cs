@@ -32,9 +32,13 @@ public static class Option
         where T : notnull
         => Some(await value);
 
-    public static Option<TValue> FromNullable<TValue>(TValue? value)
+    public static Option<TValue> From<TValue>(TValue? value)
         where TValue : notnull
         => IsNone(value) ? None<TValue>() : Some(value);
+
+    public static Option<TValue> FromNullable<TValue>(TValue? value)
+        where TValue : struct
+        => value.HasValue ? Some(value.Value) : None();
 
     public static async Task<Option<T>> FromNullableAsync<T>(Task<T?> value)
         where T : notnull

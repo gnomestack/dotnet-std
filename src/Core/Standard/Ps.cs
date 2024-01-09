@@ -467,7 +467,7 @@ public sealed partial class Ps
         return new PsOutput(this.FileName, ec, stdOut, stdError, child.StartTime, child.ExitTime);
     }
 
-    public Result<PsOutput, Exception> OutputAsResult()
+    public ValueResult<PsOutput, Exception> OutputAsResult()
     {
         try
         {
@@ -529,7 +529,7 @@ public sealed partial class Ps
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The process output.</returns>
-    public async Task<Result<PsOutput, Exception>> OutputAsResultAsync(CancellationToken cancellationToken = default)
+    public async Task<ValueResult<PsOutput, Exception>> OutputAsResultAsync(CancellationToken cancellationToken = default)
     {
         try
         {

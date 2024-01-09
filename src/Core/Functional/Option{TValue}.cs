@@ -20,11 +20,14 @@ namespace GnomeStack.Functional;
 ///     </para>
 /// </remarks>
 /// <typeparam name="TValue">The type of the value.</typeparam>
-public readonly struct Option<TValue> :
+#pragma warning disable S4035 // Classes implementing "IEquatable<T>" should be sealed
+public class Option<TValue> :
     IEquatable<Option<TValue>>,
     IOptional<TValue>
     where TValue : notnull
 {
+    private static readonly Option<TValue> s_none = new(OptionState.None, default!);
+
     private readonly TValue value;
 
     private readonly OptionState state = OptionState.Some;
@@ -81,6 +84,21 @@ public readonly struct Option<TValue> :
 
     public static bool operator !=(Option<TValue> left, TValue right)
         => !left.Equals(right);
+
+    public static Option<TValue> None()
+        => s_none;
+
+    public static Option<TValue> Some(TValue value)
+        => new(OptionState.Some, value);
+
+    public static bool IsValueNone(object? value)
+    {
+        return value switch
+        {
+            IOptional optional => optional.IsNone,
+            _ => Void.IsVoid(value),
+        };
+    }
 
     /// <summary>
     /// Deconstructs the <see cref="Option{TValue}"/> into
@@ -189,14 +207,12 @@ public readonly struct Option<TValue> :
     /// Returns <c>None</c> if the option is <c>None</c>, otherwise,
     /// returns <paramref name="other"/>.
     /// </summary>
-    /// <typeparam name="TOther">The type of the other option.</typeparam>
     /// <param name="other">The other value to return when this option has a value.</param>
     /// <returns>An option of <paramref name="other"/>.</returns>
-    public Option<TOther> And<TOther>(Option<TOther> other)
-        where TOther : notnull
+    public Option<TValue> And(Option<TValue> other)
     {
         if (this.IsNone)
-            return Option.None<TOther>();
+            return this;
 
         return other;
     }
@@ -205,14 +221,12 @@ public readonly struct Option<TValue> :
     /// Returns <c>None</c> if the option is <c>None</c>, otherwise,
     /// returns <paramref name="other"/>.
     /// </summary>
-    /// <typeparam name="TOther">The type of the other value.</typeparam>
     /// <param name="other">The other value to return when this option has a value.</param>
     /// <returns>An option of <paramref name="other"/>.</returns>
-    public Option<TOther> And<TOther>(TOther other)
-        where TOther : notnull
+    public Option<TValue> And(TValue other)
     {
         if (this.IsNone)
-            return Option.None<TOther>();
+            return this;
 
         return other;
     }
@@ -221,16 +235,14 @@ public readonly struct Option<TValue> :
     /// Returns <c>None</c> if the option is <c>None</c>, otherwise,
     /// returns the result of lazily evaluated <paramref name="generateValue"/>.
     /// </summary>
-    /// <typeparam name="TOther">The type of the other option.</typeparam>
     /// <param name="generateValue">The other value to return when this option has a value.</param>
     /// <returns>An option of <paramref name="generateValue"/>.</returns>
-    public Option<TOther> And<TOther>(Func<TOther> generateValue)
-        where TOther : notnull
+    public Option<TValue> And(Func<TValue> generateValue)
     {
         if (this.IsNone)
-            return Option.None<TOther>();
+            return Option.None<TValue>();
 
-        return generateValue();
+        return Some(generateValue());
     }
 
     /// <summary>
@@ -310,6 +322,14 @@ public readonly struct Option<TValue> :
             return Option.None<TValue>();
 
         return this;
+    }
+
+    public bool Match(Func<TValue, bool> predicate)
+    {
+        if (this.IsNone)
+            return false;
+
+        return predicate(this.value);
     }
 
     /// <summary>
@@ -404,7 +424,7 @@ public readonly struct Option<TValue> :
     /// </summary>
     /// <param name="defaultValue">The default value.</param>
     /// <returns>The value or default value.</returns>
-    public TValue UnwrapOr(TValue defaultValue)
+    public TValue Unwrap(TValue defaultValue)
         => this.IsNone ? defaultValue : this.value!;
 
     /// <summary>
@@ -413,7 +433,7 @@ public readonly struct Option<TValue> :
     /// </summary>
     /// <param name="factory">The factory to create the default value.</param>
     /// <returns>The value or default value.</returns>
-    public TValue UnwrapOr(Func<TValue> factory)
+    public TValue Unwrap(Func<TValue> factory)
         => this.IsNone ? factory() : this.value!;
 
     /// <summary>

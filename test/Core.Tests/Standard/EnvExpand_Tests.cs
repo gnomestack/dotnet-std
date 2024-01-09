@@ -6,7 +6,7 @@ public class EnvExpand_Tests
     [UnitTest]
     public void EvaluateNothing(IAssert assert)
     {
-        var result = Env.Expand("Hello World");
+        var result = Env.ExpandVars("Hello World");
         assert.Equal("Hello World", result);
     }
 
@@ -15,10 +15,10 @@ public class EnvExpand_Tests
     {
         Environment.SetEnvironmentVariable("WORD", "World");
 
-        var result = Env.Expand("Hello \\$WORD");
+        var result = Env.ExpandVars("Hello \\$WORD");
         assert.Equal("Hello $WORD", result);
 
-        result = Env.Expand("Hello $WORD\\_SUN");
+        result = Env.ExpandVars("Hello $WORD\\_SUN");
         assert.Equal("Hello World_SUN", result);
     }
 
@@ -28,10 +28,10 @@ public class EnvExpand_Tests
         Environment.SetEnvironmentVariable("WORD", "World");
         Environment.SetEnvironmentVariable("HELLO", "Hello");
 
-        var result = Env.Expand("$HELLO $WORD");
+        var result = Env.ExpandVars("$HELLO $WORD");
         assert.Equal("Hello World", result);
 
-        result = Env.Expand("$HELLO$WORD!");
+        result = Env.ExpandVars("$HELLO$WORD!");
         assert.Equal("HelloWorld!", result);
     }
 
@@ -40,19 +40,19 @@ public class EnvExpand_Tests
     {
         Environment.SetEnvironmentVariable("WORD", "World");
 
-        var result = Env.Expand("Hello %WORD%");
+        var result = Env.ExpandVars("Hello %WORD%");
         assert.Equal("Hello World", result);
 
-        result = Env.Expand("Hello test%WORD%:");
+        result = Env.ExpandVars("Hello test%WORD%:");
         assert.Equal("Hello testWorld:", result);
 
-        result = Env.Expand("%WORD%");
+        result = Env.ExpandVars("%WORD%");
         assert.Equal("World", result);
 
-        result = Env.Expand("%WORD%  ");
+        result = Env.ExpandVars("%WORD%  ");
         assert.Equal("World  ", result);
 
-        result = Env.Expand(" \n%WORD%  ");
+        result = Env.ExpandVars(" \n%WORD%  ");
         assert.Equal(" \nWorld  ", result);
     }
 
@@ -61,19 +61,19 @@ public class EnvExpand_Tests
     {
         Environment.SetEnvironmentVariable("WORD", "World");
 
-        var result = Env.Expand("Hello $WORD");
+        var result = Env.ExpandVars("Hello $WORD");
         assert.Equal("Hello World", result);
 
-        result = Env.Expand("Hello test$WORD:");
+        result = Env.ExpandVars("Hello test$WORD:");
         assert.Equal("Hello testWorld:", result);
 
-        result = Env.Expand("$WORD");
+        result = Env.ExpandVars("$WORD");
         assert.Equal("World", result);
 
-        result = Env.Expand("$WORD  ");
+        result = Env.ExpandVars("$WORD  ");
         assert.Equal("World  ", result);
 
-        result = Env.Expand(" \n$WORD  ");
+        result = Env.ExpandVars(" \n$WORD  ");
         assert.Equal(" \nWorld  ", result);
     }
 
@@ -82,19 +82,19 @@ public class EnvExpand_Tests
     {
         Environment.SetEnvironmentVariable("WORD", "World");
 
-        var result = Env.Expand("Hello ${WORD}");
+        var result = Env.ExpandVars("Hello ${WORD}");
         assert.Equal("Hello World", result);
 
-        result = Env.Expand("Hello test${WORD}:");
+        result = Env.ExpandVars("Hello test${WORD}:");
         assert.Equal("Hello testWorld:", result);
 
-        result = Env.Expand("${WORD}");
+        result = Env.ExpandVars("${WORD}");
         assert.Equal("World", result);
 
-        result = Env.Expand("${WORD}  ");
+        result = Env.ExpandVars("${WORD}  ");
         assert.Equal("World  ", result);
 
-        result = Env.Expand(" \n$WORD  ");
+        result = Env.ExpandVars(" \n$WORD  ");
         assert.Equal(" \nWorld  ", result);
     }
 
@@ -104,7 +104,7 @@ public class EnvExpand_Tests
         // assert state
         assert.False(Env.Has("WORD2"));
 
-        var result = Env.Expand("${WORD2:-World}");
+        var result = Env.ExpandVars("${WORD2:-World}");
         assert.Equal("World", result);
         assert.False(Env.Has("WORD2"));
     }
@@ -115,7 +115,7 @@ public class EnvExpand_Tests
         // assert state
         assert.False(Env.Has("WORD3"));
 
-        var result = Env.Expand("${WORD3:=World}");
+        var result = Env.ExpandVars("${WORD3:=World}");
         assert.Equal("World", result);
         assert.True(Env.Has("WORD3"));
         assert.Equal("World", Env.Get("WORD3"));
@@ -128,21 +128,21 @@ public class EnvExpand_Tests
 
         var ex = assert.Throws<EnvExpandException>(() =>
         {
-            Env.Expand("Hello ${WORLD:?WORLD must be set}");
+            Env.ExpandVars("Hello ${WORLD:?WORLD must be set}");
         });
 
         assert.Equal("WORLD must be set", ex.Message);
 
         ex = assert.Throws<EnvExpandException>(() =>
         {
-            Env.Expand("Hello ${WORLD}");
+            Env.ExpandVars("Hello ${WORLD}");
         });
 
         assert.Equal("Bad substitution, variable WORLD is not set.", ex.Message);
 
         ex = assert.Throws<EnvExpandException>(() =>
         {
-            Env.Expand("Hello $WORLD");
+            Env.ExpandVars("Hello $WORLD");
         });
 
         assert.Equal("Bad substitution, variable WORLD is not set.", ex.Message);
@@ -155,12 +155,12 @@ public class EnvExpand_Tests
 
         assert.Throws<EnvExpandException>(() =>
         {
-            Env.Expand("Hello ${WORD");
+            Env.ExpandVars("Hello ${WORD");
         });
 
         assert.Throws<EnvExpandException>(() =>
         {
-            Env.Expand("Hello %WORD");
+            Env.ExpandVars("Hello %WORD");
         });
     }
 }

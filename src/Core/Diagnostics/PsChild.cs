@@ -431,7 +431,7 @@ public sealed class PsChild : IDisposable
         return this.process.ExitCode;
     }
 
-    public Result<PsOutput, Exception> WaitForResult()
+    public ValueResult<PsOutput, Exception> WaitForResult()
         => Result.Try(this.WaitForOutput);
 
     public PsOutput WaitForOutput()
@@ -498,7 +498,7 @@ public sealed class PsChild : IDisposable
         return this.process.ExitCode;
     }
 
-    public Task<Result<PsOutput, Exception>> WaitForResultAsync(CancellationToken cancellationToken = default)
+    public Task<ValueResult<PsOutput, Exception>> WaitForResultAsync(CancellationToken cancellationToken = default)
         => Result.TryAsync(this.WaitForOutputAsync, cancellationToken);
 
     public async Task<PsOutput> WaitForOutputAsync(CancellationToken cancellationToken)

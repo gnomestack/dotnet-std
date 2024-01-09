@@ -100,10 +100,7 @@ public class ArgumentOutOfRangeError : ArgumentError
 
     public override Exception ToException()
     {
-        if (this.Exception is not null)
-            return this.Exception;
-
-        return new ArgumentOutOfRangeException(this.ParamName, this.ActualValue, this.Message);
+        return this.Exception ?? new ArgumentOutOfRangeException(this.ParamName, this.ActualValue, this.Message);
     }
 }
 
