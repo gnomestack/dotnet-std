@@ -407,7 +407,7 @@ internal static class Serializer
 
         if (expand)
         {
-            Func<string, string?> getVariable = Env.Get;
+            Func<string, string?> getVariable = Env.Var;
             if (options?.ExpandVariables is not null)
             {
                 var ev = options.ExpandVariables;
@@ -419,7 +419,7 @@ internal static class Serializer
                     if (ev.TryGetValue(name, out value))
                         return value;
 
-                    value = Env.Get(name);
+                    value = Env.Var(name);
 
                     return value;
                 };
@@ -430,7 +430,7 @@ internal static class Serializer
                 UnixAssignment = false,
                 UnixCustomErrorMessage = false,
                 GetVariable = getVariable,
-                SetVariable = (name, value) => Env.Set(name, value),
+                SetVariable = Env.SetVar,
             };
             foreach (var entry in doc)
             {

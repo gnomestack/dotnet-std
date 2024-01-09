@@ -133,7 +133,7 @@ public static class DotEnvSerializer
 
         if (expand)
         {
-            Func<string, string?> getVariable = (name) => Env.Get(name);
+            Func<string, string?> getVariable = (name) => Env.Var(name);
             if (options?.ExpandVariables is not null)
             {
                 var ev = options.ExpandVariables;
@@ -145,7 +145,7 @@ public static class DotEnvSerializer
                     if (ev.TryGetValue(name, out value))
                         return value;
 
-                    value = Env.Get(name);
+                    value = Env.Var(name);
 
                     return value;
                 };
@@ -156,7 +156,7 @@ public static class DotEnvSerializer
                 UnixAssignment = false,
                 UnixCustomErrorMessage = false,
                 GetVariable = getVariable,
-                SetVariable = Env.Set,
+                SetVariable = Env.SetVar,
             };
             foreach (var entry in doc)
             {

@@ -61,28 +61,28 @@ public class Option_Tests
     public void UnwrapOrWithSome()
     {
         var optional = Some(1);
-        Assert.Equal(1, optional.UnwrapOr(2));
+        Assert.Equal(1, optional.Unwrap(2));
     }
 
     [UnitTest]
     public void UnwrapOrWithNone()
     {
         var optional = None<int>();
-        Assert.Equal(2, optional.UnwrapOr(2));
+        Assert.Equal(2, optional.Unwrap(2));
     }
 
     [UnitTest]
     public void UnwrapOrWithSomeAndFactory()
     {
         var optional = Some(1);
-        Assert.Equal(1, optional.UnwrapOr(() => 2));
+        Assert.Equal(1, optional.Unwrap(() => 2));
     }
 
     [UnitTest]
     public void UnwrapOrWithNoneAndFactory()
     {
         var optional = None<int>();
-        Assert.Equal(2, optional.UnwrapOr(() => 2));
+        Assert.Equal(2, optional.Unwrap(() => 2));
     }
 
     [UnitTest]

@@ -1,5 +1,7 @@
 using GnomeStack.Standard;
 
+// ReSharper disable ParameterHidesMember
+// ReSharper disable NonReadonlyMemberInGetHashCode
 namespace GnomeStack.Functional;
 
 /// <summary>
@@ -28,9 +30,9 @@ public class Option<TValue> :
 {
     private static readonly Option<TValue> s_none = new(OptionState.None, default!);
 
-    private readonly TValue value;
+    private TValue value;
 
-    private readonly OptionState state = OptionState.Some;
+    private OptionState state;
 
     internal Option(OptionState state, TValue value)
     {
@@ -178,8 +180,11 @@ public class Option<TValue> :
     /// <see langword="true"/> when the values are
     /// equal; otherwise, <see langword="false" />.
     /// </returns>
-    public bool Equals(Option<TValue> other)
+    public bool Equals(Option<TValue>? other)
     {
+        if (other is null)
+            return false;
+
         return this.state == other.state &&
                (this.IsNone ||
                (this.IsSome && EqualityComparer<TValue>.Default.Equals(this.value, other.value)));
@@ -198,6 +203,7 @@ public class Option<TValue> :
     }
 
     // override object.GetHashCode
+#pragma warning disable S2328
     public override int GetHashCode()
     {
         return HashCode.Combine(this.state, this.value);
@@ -343,30 +349,87 @@ public class Option<TValue> :
         where TOther : notnull
         => this.IsNone ? Option.None<TOther>() : Option.Some(map(this.value));
 
-    /// <summary>
-    /// Maps the value to a new value if the option is <c>Some</c>,
-    /// otherwise, returns an option with the default value.
-    /// </summary>
-    /// <typeparam name="TOther">The type of the other value.</typeparam>
-    /// <param name="map">The map function that projects the value.</param>
-    /// <param name="defaultValue">The default value.</param>
-    /// <returns>The new option.</returns>
-    public Option<TOther> MapOr<TOther>(Func<TValue, TOther> map, TOther defaultValue)
+    public Option<TOther> Map<TOther>(Func<TValue, TOther> map, TOther value)
         where TOther : notnull
-        => this.IsNone ? defaultValue : map(this.value);
+    {
+        if (this.IsNone)
+            return new Option<TOther>(OptionState.Some, value);
 
-    /// <summary>
-    /// Maps the value to a new value if the option is <c>Some</c>,
-    /// otherwise, returns an option with the default value that is
-    /// lazily created.
-    /// </summary>
-    /// <typeparam name="TOther">The type of the other value.</typeparam>
-    /// <param name="map">The map function that projects the value.</param>
-    /// <param name="defaultValue">The factory that generates the other value.</param>
-    /// <returns>The new option.</returns>
-    public Option<TOther> MapOr<TOther>(Func<TValue, TOther> map, Func<TOther> defaultValue)
+        return new Option<TOther>(OptionState.Some, map(this.value));
+    }
+
+    public Option<TOther> Map<TOther>(Func<TValue, TOther> map, Func<TOther> generate)
         where TOther : notnull
-        => this.IsNone ? defaultValue() : map(this.value);
+    {
+        if (this.IsNone)
+            return new Option<TOther>(OptionState.Some, generate());
+
+        return new Option<TOther>(OptionState.Some, map(this.value));
+    }
+
+    public async Task<Option<TOther>> MapAsync<TOther>(Func<TValue, Task<TOther>> map)
+        where TOther : notnull
+    {
+        if (this.IsNone)
+            return Option<TOther>.None();
+
+        var value = await map(this.value!);
+        return new Option<TOther>(OptionState.Some, value);
+    }
+
+    public async Task<Option<TOther>> MapAsync<TOther>(
+        Func<TValue, Task<TOther>> map,
+        Func<Task<TOther>> generate)
+        where TOther : notnull
+    {
+        if (this.IsNone)
+        {
+            var next = await generate()
+                .ConfigureAwait(false);
+            return new Option<TOther>(OptionState.Some, next);
+        }
+
+        var value = await map(this.value!)
+            .ConfigureAwait(false);
+
+        return new Option<TOther>(OptionState.Some, value);
+    }
+
+    public async Task<Option<TOther>> MapAsync<TOther>(
+        Func<TValue, CancellationToken, Task<TOther>> map,
+        CancellationToken cancellationToken = default)
+        where TOther : notnull
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (this.IsNone)
+            return Option<TOther>.None();
+
+        var value = await map(this.value!, cancellationToken)
+            .ConfigureAwait(false);
+
+        return value;
+    }
+
+    public async Task<Option<TOther>> MapAsync<TOther>(
+        Func<TValue, CancellationToken, Task<TOther>> map,
+        Func<CancellationToken, Task<TOther>> generate,
+        CancellationToken cancellationToken = default)
+        where TOther : notnull
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (this.IsNone)
+        {
+            var next = await generate(cancellationToken)
+                .ConfigureAwait(false);
+
+            return new Option<TOther>(OptionState.Some, next);
+        }
+
+        var value = await map(this.value!, cancellationToken)
+            .ConfigureAwait(false);
+
+        return new Option<TOther>(OptionState.Some, value);
+    }
 
     /// <summary>
     /// Returns the option if it is <c>Some</c>, otherwise, returns
@@ -403,6 +466,28 @@ public class Option<TValue> :
     /// <returns>An option.</returns>
     public Option<TValue> Or(Func<Option<TValue>> factory)
         => this.IsNone ? factory() : this;
+
+    public Option<TValue> Replace(TValue value)
+    {
+        this.value = value!;
+        this.state = Void.IsVoid(value) ? OptionState.None : OptionState.Some;
+        return this;
+    }
+
+    /// <summary>
+    /// Takes the value, sets the state to none, returns the value. If the value is none,
+    /// then an exception is thrown.
+    /// </summary>
+    /// <returns>The value.</returns>
+    /// <exception cref="OptionException">Thrown when the state is <c>None</c>.</exception>
+    public TValue Take()
+    {
+        this.ThrowIfNone();
+        var value = this.value;
+        this.value = default!;
+        this.state = OptionState.None;
+        return value;
+    }
 
     /// <summary>
     /// Returns the underlying value if it is <c>Some</c>, otherwise, throws

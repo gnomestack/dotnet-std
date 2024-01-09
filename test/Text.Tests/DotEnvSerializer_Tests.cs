@@ -417,9 +417,10 @@ HW="Hello, ${WORD}"
     [UnitTest]
     public void Load()
     {
-        Env.Remove("age");
-        Env.Remove("name");
-        Assert.False(Env.Has("name"));
+        var ev = Env.Vars;
+        ev.Remove("age");
+        ev.Remove("name");
+        Assert.False(ev.Contains("name"));
         var options = new DotEnvLoadOptions()
         {
             Content = """
@@ -429,9 +430,9 @@ HW="Hello, ${WORD}"
         };
 
         DotEnv.Load(options);
-        Assert.True(Env.Has("name"));
-        Assert.True(Env.Has("age"));
-        Assert.Equal("21", Env.GetRequired("age"));
-        Assert.Equal("John Doe", Env.GetRequired("name"));
+        Assert.True(ev.Contains("name"));
+        Assert.True(ev.Contains("age"));
+        Assert.Equal("21", ev.GetRequired("age"));
+        Assert.Equal("John Doe", ev.GetRequired("name"));
     }
 }

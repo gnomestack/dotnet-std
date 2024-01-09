@@ -67,7 +67,7 @@ public static class AnsiDetector
 
     public static AnsiMode DetectMode()
     {
-        if (Env.TryGet("GNOMESTACK_TERM", out var term))
+        if (Env.Vars.TryGet("GNOMESTACK_TERM", out var term))
         {
             switch (term)
             {

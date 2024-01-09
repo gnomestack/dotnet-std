@@ -102,23 +102,23 @@ public class EnvExpand_Tests
     public void UseDefaultValueForBashVar(IAssert assert)
     {
         // assert state
-        assert.False(Env.Has("WORD2"));
+        assert.False(Env.Vars.Contains("WORD2"));
 
         var result = Env.ExpandVars("${WORD2:-World}");
         assert.Equal("World", result);
-        assert.False(Env.Has("WORD2"));
+        assert.False(Env.Vars.Contains("WORD2"));
     }
 
     [UnitTest]
     public void SetEnvValueWithBashVarWhenNull(IAssert assert)
     {
         // assert state
-        assert.False(Env.Has("WORD3"));
+        assert.False(Env.Vars.Contains("WORD3"));
 
         var result = Env.ExpandVars("${WORD3:=World}");
         assert.Equal("World", result);
-        assert.True(Env.Has("WORD3"));
-        assert.Equal("World", Env.Get("WORD3"));
+        assert.True(Env.Vars.Contains("WORD3"));
+        assert.Equal("World", Env.Var("WORD3"));
     }
 
     [UnitTest]

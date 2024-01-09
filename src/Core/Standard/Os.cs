@@ -72,12 +72,8 @@ public static partial class Os
 
 #if NET8_0_OR_GREATER
     public static bool IsWasi() => OperatingSystem.IsWasi();
-
-    public static bool IsNetBSD() => OperatingSystem.IsNetBSD();
 #else
     public static bool IsWasi() => false;
-
-    public static bool IsNetBSD() => false;
 #endif
 
 #if NET5_0_OR_GREATER
@@ -106,9 +102,7 @@ public static partial class Os
 
     public static bool IsAndroid() => false;
 
-    public static bool IsNetBSD() => false;
 #endif
-
     public static bool IsUbuntu() => Release.Id.Equals("ubuntu", StringComparison.OrdinalIgnoreCase);
 
     public static bool IsDebian() => Release.Id.Equals("debian", StringComparison.OrdinalIgnoreCase);
@@ -138,7 +132,7 @@ public static partial class Os
 #if NET8_0_OR_GREATER
         if (OperatingSystem.IsWasi())
         {
-            var os = new OsReleaseInfo(OSPlatform.Create("WASI"));
+            var os = new OsReleaseInfo();
             os.Id = "wasi";
             os.Name = "WASI";
             os.VersionLabel = v.ToString();

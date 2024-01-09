@@ -1,4 +1,3 @@
-using System;
 using System.Diagnostics;
 using System.Runtime.Versioning;
 
@@ -8,14 +7,15 @@ namespace GnomeStack.Standard;
 
 public static partial class Env
 {
-    private static readonly Lazy<string[]> argv = new Lazy<string[]>(Environment.GetCommandLineArgs);
+    private static readonly Lazy<string[]> s_argv = new Lazy<string[]>(Environment.GetCommandLineArgs);
+#if NETLEGACY
+    private static readonly Lazy<Process> s_process = new Lazy<Process>(Process.GetCurrentProcess);
+#endif
 
-    private static readonly Lazy<Process> process = new Lazy<Process>(Process.GetCurrentProcess);
-
-    private static readonly Lazy<int> getProcessId = new(() =>
+    private static readonly Lazy<int> s_getProcessId = new(() =>
     {
 #if NETLEGACY
-        return process.Value.Id;
+        return s_process.Value.Id;
 #else
         return Environment.ProcessId;
 #endif
@@ -30,19 +30,20 @@ public static partial class Env
             Argv.Contains("-NonInteractive", StringComparer.OrdinalIgnoreCase))
             return false;
 
-        if (TryGet("DEBIAN_FRONTEND", out var frontend) &&
+        // false positive of a deference without the !
+        if (Vars!.TryGet("DEBIAN_FRONTEND", out var frontend) &&
             frontend.Equals("noninteractive", StringComparison.OrdinalIgnoreCase))
             return false;
 
-        if (TryGet("CI", out var ci) &&
+        if (Vars.TryGet("CI", out var ci) &&
             ci.Equals("true", StringComparison.OrdinalIgnoreCase))
             return false;
 
-        if (TryGet("TF_BUILD", out var tfBuild) &&
+        if (Vars.TryGet("TF_BUILD", out var tfBuild) &&
             tfBuild.Equals("true", StringComparison.OrdinalIgnoreCase))
             return false;
 
-        if (TryGet("JENKINS_URL", out var jenkinsUrl) &&
+        if (Vars.TryGet("JENKINS_URL", out var jenkinsUrl) &&
             !jenkinsUrl.IsNullOrWhiteSpace())
             return false;
 
@@ -64,11 +65,11 @@ public static partial class Env
                 throw new PlatformNotSupportedException("Browser does not support ProcessId.");
 #endif
 
-            return getProcessId.Value;
+            return s_getProcessId.Value;
         }
     }
 
-    public static IReadOnlyList<string> Argv => argv.Value;
+    public static IReadOnlyList<string> Argv => s_argv.Value;
 
     public static string User => Environment.UserName;
 

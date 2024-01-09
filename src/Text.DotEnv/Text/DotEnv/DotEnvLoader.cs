@@ -48,9 +48,9 @@ public static class DotEnvLoader
         var doc = Parse(options);
         foreach (var entry in doc)
         {
-            if (entry is EnvNameValuePair var && (options.OverrideEnvironment || !Env.Has(var.Name)))
+            if (entry is EnvNameValuePair var && (options.OverrideEnvironment || !Env.Vars.Contains(var.Name)))
             {
-                Env.Set(var.Name, var.Value);
+                Env.SetVar(var.Name, var.Value);
             }
         }
     }

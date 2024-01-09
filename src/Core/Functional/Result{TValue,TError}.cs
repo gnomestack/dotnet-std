@@ -1,5 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
-
+// ReSharper disable ParameterHidesMember
 namespace GnomeStack.Functional;
 
 #pragma warning disable S4035 // Classes implementing "IEquatable<T>" should be sealed
@@ -7,7 +6,7 @@ public class Result<TValue, TError> : IResult<TValue, TError>
     where TError : notnull
     where TValue : notnull
 {
-    private readonly ResultState state;
+    private ResultState state;
 
     private TValue value;
 
@@ -315,6 +314,22 @@ public class Result<TValue, TError> : IResult<TValue, TError>
         return action(this.error);
     }
 
+    public bool Match(Func<TValue, bool> predicate)
+    {
+        if (this.IsError)
+            return false;
+
+        return predicate(this.value!);
+    }
+
+    public bool MatchError(Func<TError, bool> predicate)
+    {
+        if (this.IsOk)
+            return false;
+
+        return predicate(this.error!);
+    }
+
     public Result<TOther, TError> Map<TOther>(TOther other)
         where TOther : notnull
     {
@@ -523,12 +538,11 @@ public class Result<TValue, TError> : IResult<TValue, TError>
     /// </summary>
     /// <param name="value">The value that replaces the underlying value.</param>
     /// <returns>The result.</returns>
-    public Result<TValue, TError> Update(TValue value)
+    public Result<TValue, TError> Replace(TValue value)
     {
-        if (this.IsError)
-            return this.error;
-
         this.value = value;
+        this.error = default!;
+        this.state = ResultState.Ok;
         return this;
     }
 
@@ -537,12 +551,11 @@ public class Result<TValue, TError> : IResult<TValue, TError>
     /// </summary>
     /// <param name="generate">The function that lazily generates the new underlying value.</param>
     /// <returns>The result.</returns>
-    public Result<TValue, TError> Update(Func<TValue> generate)
+    public Result<TValue, TError> Replace(Func<TValue> generate)
     {
-        if (this.IsError)
-            return this;
-
         this.value = generate();
+        this.error = default!;
+        this.state = ResultState.Ok;
         return this;
     }
 
@@ -551,21 +564,24 @@ public class Result<TValue, TError> : IResult<TValue, TError>
     /// </summary>
     /// <param name="update">The function that lazily updates the underlying value.</param>
     /// <returns>The result.</returns>
-    public Result<TValue, TError> Update(Func<TValue, TValue> update)
+    public Result<TValue, TError> Replace(Func<TValue, TValue> update)
     {
-        if (this.IsError)
-            return this;
-
-        this.value = update(this.value!);
+        this.ThrowOnError();
+        this.value = update(this.value);
         return this;
     }
 
-    public Result<TValue, TError> UpdateError(TError error)
+    public Result<TValue, TError> ReplaceError(TError error)
     {
-        if (this.IsOk)
-            return this;
-
         this.error = error;
+        this.state = ResultState.Err;
+        return this;
+    }
+
+    public Result<TValue, TError> ReplaceError(Func<TError> generate)
+    {
+        this.error = generate();
+        this.state = ResultState.Err;
         return this;
     }
 

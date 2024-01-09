@@ -68,7 +68,7 @@ public partial class Ps
             IEnumerable<string> matches = Array.Empty<string>();
             if (Env.IsWindows)
             {
-                var pathExt = Env.Get("PATHEXT");
+                var pathExt = Env.Var("PATHEXT");
                 if (pathExt.IsNullOrWhiteSpace())
                 {
                     // XP's system default value for PATHEXT system variable

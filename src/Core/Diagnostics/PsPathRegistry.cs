@@ -102,13 +102,13 @@ public class PsPathRegistry
         if (!entry.EnvVariable.IsNullOrWhiteSpace())
         {
             var cached = !entry.CachedPath.IsNullOrWhiteSpace();
-            var envPath = Env.Get(entry.EnvVariable);
+            var envPath = Env.Var(entry.EnvVariable);
             if (!envPath.IsNullOrWhiteSpace())
             {
                 if (cached && envPath == entry.CachedPath)
                     return envPath;
 
-                envPath = Env.Expand(envPath);
+                envPath = Env.ExpandVars(envPath);
                 envPath = Path.GetFullPath(envPath);
                 if (cached && entry.CachedPath == envPath)
                     return envPath;
