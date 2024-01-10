@@ -1,7 +1,7 @@
 using GnomeStack;
 using GnomeStack.Functional;
 
-using static GnomeStack.Standard.Option;
+using static GnomeStack.Functional.Option;
 
 namespace Tests;
 
@@ -104,11 +104,11 @@ public class Option_Tests
         Assert.False(IsNone(new object[] { }));
         Assert.False(IsNone(new List<int>()));
         Assert.True(IsNone(null));
-        Assert.True(IsNone(Nil.Value));
+        Assert.True(IsNone(GnomeStack.Void.Value));
         Assert.True(IsNone(DBNull.Value));
         Assert.True(IsNone(ValueTuple.Create()));
         Assert.True(IsNone(None()));
         Assert.True(none.Equals(None()));
-        Assert.True(none.Equals(Nil.Value));
+        Assert.True(none.Equals(GnomeStack.Void.Value));
     }
 }

@@ -1,8 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 
-using GnomeStack.Functional;
-
-namespace GnomeStack.Standard;
+namespace GnomeStack.Functional;
 
 /// <summary>
 ///    Provides static methods for creating and manipulating
