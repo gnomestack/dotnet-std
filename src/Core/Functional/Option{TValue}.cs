@@ -69,11 +69,11 @@ public class Option<TValue> :
     /// Implicitly converts <see cref="Nil"/> to <see cref="Option{TValue}"/>.
     /// </summary>
     /// <param name="_">The discarded value.</param>
-    public static implicit operator Option<TValue>(Nil _)
-        => Option.None<TValue>();
+    public static implicit operator Option<TValue>(Void _)
+        => new(OptionState.None, default!);
 
     public static implicit operator Option<TValue>(DBNull _)
-        => Option.None<TValue>();
+        => new(OptionState.None, default!);
 
     public static bool operator ==(Option<TValue> left, Option<TValue> right)
         => left.Equals(right);

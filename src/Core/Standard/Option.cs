@@ -10,8 +10,8 @@ namespace GnomeStack.Standard;
 /// </summary>
 public static class Option
 {
-    public static Nil None()
-        => default;
+    public static Void None()
+        => Void.Value;
 
 #pragma warning disable CS8604 // Possible null reference argument.
     public static Option<T> None<T>()
@@ -48,18 +48,8 @@ public static class Option
     }
 
     public static bool IsSome([NotNullWhen(true)] object? obj)
-    {
-        if (obj is IOptional optional)
-            return optional.IsSome;
-
-        return obj is not null and not Nil and not DBNull and not ValueTuple;
-    }
+        => !Void.IsVoid(obj);
 
     public static bool IsNone([NotNullWhen(false)] object? obj)
-    {
-        if (obj is IOptional optional)
-            return optional.IsNone;
-
-        return obj is null or Nil or DBNull or ValueTuple;
-    }
+        => Void.IsVoid(obj);
 }

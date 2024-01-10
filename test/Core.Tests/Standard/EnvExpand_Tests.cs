@@ -118,7 +118,7 @@ public class EnvExpand_Tests
         var result = Env.ExpandVars("${WORD3:=World}");
         assert.Equal("World", result);
         assert.True(Env.Vars.Contains("WORD3"));
-        assert.Equal("World", Env.Var("WORD3"));
+        assert.Equal("World", Env.GetVar("WORD3"));
     }
 
     [UnitTest]

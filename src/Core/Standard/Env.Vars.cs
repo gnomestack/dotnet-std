@@ -15,10 +15,10 @@ public static partial class Env
     public static Option<string> OptionalVar(string name)
         => Option.From(Environment.GetEnvironmentVariable(name));
 
-    public static string? Var(string name)
+    public static string? GetVar(string name)
         => Environment.GetEnvironmentVariable(name);
 
-    public static string? Var(string name, EnvironmentVariableTarget target)
+    public static string? GetVar(string name, EnvironmentVariableTarget target)
         => Environment.GetEnvironmentVariable(name);
 
     public static void SetVar(string name, string value)
@@ -36,7 +36,7 @@ public static partial class Env
     public static IEnumerable<string> SplitPath(EnvironmentVariableTarget target = EnvironmentVariableTarget.Process)
     {
         var name = IsWindows ? "Path" : "PATH";
-        var path = Var(name, target) ?? string.Empty;
+        var path = GetVar(name, target) ?? string.Empty;
         return path.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries);
     }
 
