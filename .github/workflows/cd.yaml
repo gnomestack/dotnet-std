@@ -56,7 +56,7 @@ jobs:
 
     - name: 🧪 Test
       run: |
-        dotnet test '${{ env.PROJECT_DIR }}/${{ env.SLN }}'--no-restore --no-build -c '${{ env.BUILD_CFG }}'
+        dotnet test '${{ env.PROJECT_DIR }}/${{ env.SLN }}' --no-restore --no-build -c '${{ env.BUILD_CFG }}'
       working-directory: ${{ env.PROJECT_DIR }}
 
     - name: 📦 Pack
