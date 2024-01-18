@@ -12,6 +12,7 @@ env:
   GH_KEY: ${{ secrets.GH_PACKAGES_PAT }}
   NUGET_KEY: ${{ secrets.NUGET_ORG_API_KEY }}
   BUILD_CFG: "Release"
+  SLN: "std.sln"
 
 
 jobs:
@@ -45,23 +46,23 @@ jobs:
 
     - name: 🔁 Restore 
       run: |
-        dotnet restore ./pl.sln
+        dotnet restore '${{ env.PROJECT_DIR }}/${{ env.SLN }}'
       working-directory: ${{ env.PROJECT_DIR }}
 
     - name: 🏭 Build
       run: |
-        dotnet build ./pl.sln --no-restore -c '${{ env.BUILD_CFG }}'
+        dotnet build '${{ env.PROJECT_DIR }}/${{ env.SLN }}' --no-restore -c '${{ env.BUILD_CFG }}'
       working-directory: ${{ env.PROJECT_DIR }}
 
     - name: 🧪 Test
       run: |
-        dotnet test ./pl.sln --no-restore --no-build -c '${{ env.BUILD_CFG }}'
+        dotnet test '${{ env.PROJECT_DIR }}/${{ env.SLN }}'--no-restore --no-build -c '${{ env.BUILD_CFG }}'
       working-directory: ${{ env.PROJECT_DIR }}
 
     - name: 📦 Pack
       if: ${{ matrix.os == 'ubuntu-latest' }}
       run: |
-        dotnet pack ./pl.sln --no-restore --no-build -c '${{ env.BUILD_CFG }}' --output './.artifacts/packages'
+        dotnet pack '${{ env.PROJECT_DIR }}/${{ env.SLN }}' --no-restore --no-build -c '${{ env.BUILD_CFG }}' --output './.artifacts/packages'
       working-directory: ${{ env.PROJECT_DIR }}
 
     - name: 🔼 Upload Artifacts
