@@ -3,6 +3,7 @@ using GnomeStack.Extras.Functional;
 using GnomeStack.Functional;
 
 using static GnomeStack.Functional.Option;
+using static GnomeStack.Functional.Option;
 
 namespace Tests;
 

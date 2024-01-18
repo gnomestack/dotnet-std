@@ -37,6 +37,8 @@
 
   <ItemGroup>
     <ProjectReference Include="$(SrcDir)\Core\*.csproj" />
+    <ProjectReference Include="$(SrcDir)\Ps.ShellRunner\*.csproj" />
+    <ProjectReference Include="$(SrcDir)\Os.Secrets\*.csproj" />
   </ItemGroup>
 
   <ItemGroup>
