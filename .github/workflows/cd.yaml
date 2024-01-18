@@ -133,4 +133,5 @@ jobs:
           --source "nuget.org" `
           --api-key $token
       if: ${{ startsWith(github.ref, env.TAG_REF) }}
+      shell: pwsh
       working-directory: ${{ env.PROJECT_DIR }}
