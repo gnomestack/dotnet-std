@@ -1,8 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 
-using GnomeStack.Functional;
-
-namespace GnomeStack.Standard;
+namespace GnomeStack.Functional;
 
 /// <summary>
 ///    Provides static methods for creating and manipulating
@@ -10,8 +8,8 @@ namespace GnomeStack.Standard;
 /// </summary>
 public static class Option
 {
-    public static Void None()
-        => Void.Value;
+    public static Nil None()
+        => Nil.Value;
 
 #pragma warning disable CS8604 // Possible null reference argument.
     public static Option<T> None<T>()
@@ -48,8 +46,8 @@ public static class Option
     }
 
     public static bool IsSome([NotNullWhen(true)] object? obj)
-        => !Void.IsVoid(obj);
+        => !Nil.IsNil(obj);
 
     public static bool IsNone([NotNullWhen(false)] object? obj)
-        => Void.IsVoid(obj);
+        => Nil.IsNil(obj);
 }

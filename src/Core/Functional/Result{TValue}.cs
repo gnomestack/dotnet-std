@@ -1,6 +1,6 @@
 namespace GnomeStack.Functional;
 
-public class Result<TValue> : Result<TValue, Exception>
+public class Result<TValue> : Result<TValue, Error>
     where TValue : notnull
 {
     public Result(TValue value)
@@ -8,8 +8,13 @@ public class Result<TValue> : Result<TValue, Exception>
     {
     }
 
-    public Result(Exception error)
+    public Result(Error error)
         : base(error)
+    {
+    }
+
+    public Result(Exception exception)
+        : base(Functional.Error.Convert(exception))
     {
     }
 
@@ -18,32 +23,13 @@ public class Result<TValue> : Result<TValue, Exception>
         return new Result<TValue>(value);
     }
 
-    public static new Result<TValue> Error(Exception exception)
+    public static Result<TValue> Error(Exception exception)
     {
-        return new Result<TValue>(exception);
-    }
-}
-
-public class ResultOrError<TValue> : Result<TValue, Error>
-    where TValue : notnull
-{
-    public ResultOrError(TValue value)
-        : base(value)
-    {
+        return new Result<TValue>(Functional.Error.Convert(exception));
     }
 
-    public ResultOrError(Error error)
-        : base(error)
+    public static new Result<TValue> Error(Error error)
     {
-    }
-
-    public static new ResultOrError<TValue> Ok(TValue value)
-    {
-        return new ResultOrError<TValue>(value);
-    }
-
-    public static new ResultOrError<TValue> Error(Error error)
-    {
-        return new ResultOrError<TValue>(error);
+        return new Result<TValue>(error);
     }
 }

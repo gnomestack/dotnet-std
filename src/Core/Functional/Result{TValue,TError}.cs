@@ -168,11 +168,6 @@ public class Result<TValue, TError> : IResult<TValue, TError>
         return other();
     }
 
-    public void Deconstruct(out TValue value)
-    {
-        value = this.value;
-    }
-
     public void Deconstruct(out bool ok, out TValue value)
     {
         ok = this.IsOk;
@@ -344,6 +339,24 @@ public class Result<TValue, TError> : IResult<TValue, TError>
     {
         if (this.IsError)
             return this.error;
+
+        return map(this.value!);
+    }
+
+    public Result<TOther, TError> Map<TOther>(Func<TValue, TOther> map, TOther defaultValue)
+        where TOther : notnull
+    {
+        if (this.IsError)
+            return defaultValue;
+
+        return map(this.value!);
+    }
+
+    public Result<TOther, TError> Map<TOther>(Func<TValue, TOther> map, Func<TOther> generate)
+        where TOther : notnull
+    {
+        if (this.IsError)
+            return generate();
 
         return map(this.value!);
     }

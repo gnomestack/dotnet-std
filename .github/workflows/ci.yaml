@@ -1,0 +1,86 @@
+name: Continuous Integration
+on: 
+  workflow_dispatch:
+  push:
+    branches:
+      - '*'
+    tags-ignore:
+      - '*'
+  
+env:
+  PROJECT_DIR: ${{ github.workspace }}
+  TAG_REF: "refs/tags/0."
+  GH_ORG: "gnomestack"
+  GH_USER: "bowtiedgnome"
+  GH_KEY: ${{ secrets.GH_PACKAGES_PAT }}
+  NUGET_KEY: ${{ secrets.NUGET_ORG_API_KEY }}
+  BUILD_CFG: "Release"
+  
+
+jobs:
+  build: 
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    continue-on-error: true
+    
+    steps:
+    - name: 🧳 Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        fetch-tags: true
+
+    - name: "Env"
+      run: |
+        echo "PROJECT_DIR: ${{ env.PROJECT_DIR }}"
+        echo "TAG_REF: ${{ env.TAG_REF }}"
+        echo "GH_ORG: ${{ env.GH_ORG }}"
+        echo "GH_USER: ${{ env.GH_USER }}"
+        echo "GH_KEY: ${{ env.GH_KEY }}"
+        echo "NUGET_KEY: ${{ env.NUGET_KEY }}"
+        echo "BUILD_CFG: ${{ env.BUILD_CFG }}"
+
+#    - name: "🦕 Setup Deno" 
+#      uses: denoland/setup-deno@v1
+#      with:
+#        deno-version: v1.x
+
+#    - name: "🔥 Install Fire"
+#      run: |
+#        deno install --unstable -qAn fire "https://deno.land/x/gs_fire@0.0.0/cli.ts"
+
+    - name: 🔧 Setup .NET Core # Required to execute ReportGenerator
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 8.x
+        dotnet-quality: 'ga'
+
+    - name: 🔁 Restore 
+      run: |
+        dotnet restore ./pl.sln
+      working-directory: ${{ env.PROJECT_DIR }}
+
+    - name: 🏭 Build
+      run: |
+        dotnet build ./pl.sln --no-restore -c '${{ env.BUILD_CFG }}'
+      working-directory: ${{ env.PROJECT_DIR }}
+
+    - name: 🧪 Test
+      run: |
+        dotnet test ./pl.sln --no-restore --no-build -c '${{ env.BUILD_CFG }}'
+      working-directory: ${{ env.PROJECT_DIR }}
+
+    - name: 📦 Pack
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+      run: |
+        dotnet pack ./pl.sln --no-restore --no-build -c '${{ env.BUILD_CFG }}' --output './.artifacts/packages'
+      working-directory: ${{ env.PROJECT_DIR }}
+
+    - name: 🔼 Upload Artifacts
+      uses: actions/upload-artifact@v3
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+      with:
+        name: "nupkgs"
+        path: .artifacts/packages/*.nupkg

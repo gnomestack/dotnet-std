@@ -1,14 +1,19 @@
 namespace GnomeStack.Functional;
 
-public class Result : Result<Void, Exception>
+public class Result : Result<Nil, Error>
 {
     public Result()
-        : base(Void.Value)
+        : base(Nil.Value)
     {
     }
 
-    public Result(Exception error)
+    public Result(Error error)
         : base(error)
+    {
+    }
+
+    public Result(Exception exception)
+        : base(Functional.Error.Convert(exception))
     {
     }
 
@@ -27,22 +32,16 @@ public class Result : Result<Void, Exception>
         return new Result<TValue>(value);
     }
 
-    public static ResultOrError<TValue> OkOrError<TValue>(TValue value)
+    public static Result<TValue> Error<TValue>(Error error)
         where TValue : notnull
     {
-        return new ResultOrError<TValue>(value);
-    }
-
-    public static ResultOrError<TValue> OkOrError<TValue>(Error error)
-        where TValue : notnull
-    {
-        return new ResultOrError<TValue>(error);
+        return new Result<TValue>(error);
     }
 
     public static Result<TValue> Error<TValue>(Exception exception)
         where TValue : notnull
     {
-        return new Result<TValue>(exception);
+        return new Result<TValue>(Functional.Error.Convert(exception));
     }
 
     public static Result<TValue, TError> Error<TError, TValue>(TError error)
@@ -197,130 +196,5 @@ public class Result : Result<Void, Exception>
         {
             return new Result<TValue, TError>(error(ex));
         }
-    }
-
-    public static ResultOrError TryOrError(Action action)
-    {
-        try
-        {
-            action();
-            return ResultOrError.OkResult;
-        }
-        catch (Exception ex)
-        {
-            return new ResultOrError(ex);
-        }
-    }
-
-    public static ResultOrError<TValue> TryOrError<TValue>(Func<TValue> func)
-        where TValue : notnull
-    {
-        try
-        {
-            return OkOrError(func());
-        }
-        catch (Exception ex)
-        {
-            return new ResultOrError<TValue>(ex);
-        }
-    }
-
-    public static async Task<ResultOrError> TryOrErrorAsync(Func<Task> action)
-    {
-        try
-        {
-            await action()
-                .ConfigureAwait(false);
-
-            return ResultOrError.OkResult;
-        }
-        catch (Exception ex)
-        {
-            return new ResultOrError(ex);
-        }
-    }
-
-    public static async Task<ResultOrError> TryOrErrorAsync(
-        Func<CancellationToken, Task> action,
-        CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            await action(cancellationToken)
-                .ConfigureAwait(false);
-            return ResultOrError.OkResult;
-        }
-        catch (Exception ex)
-        {
-            return new ResultOrError(ex);
-        }
-    }
-
-    public static async Task<ResultOrError<TValue>> TryOrErrorAsync<TValue>(Func<Task<TValue>> action)
-        where TValue : notnull
-    {
-        try
-        {
-            var value = await action()
-                .ConfigureAwait(false);
-
-            return new ResultOrError<TValue>(value);
-        }
-        catch (Exception ex)
-        {
-            return new ResultOrError<TValue>(ex);
-        }
-    }
-
-    public static async Task<ResultOrError<TValue>> TryOrErrorAsync<TValue>(
-        Func<CancellationToken, Task<TValue>> action,
-        CancellationToken cancellationToken = default)
-        where TValue : notnull
-    {
-        try
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            var value = await action(cancellationToken)
-                .ConfigureAwait(false);
-
-            return new ResultOrError<TValue>(value);
-        }
-        catch (Exception ex)
-        {
-            return new ResultOrError<TValue>(ex);
-        }
-    }
-}
-
-public class ResultOrError : ResultOrError<Void>
-{
-    public ResultOrError()
-        : base(Void.Value)
-    {
-    }
-
-    public ResultOrError(Error error)
-        : base(error)
-    {
-    }
-
-    public static ResultOrError OkResult { get; } = new ResultOrError();
-
-    public static ResultOrError Ok()
-    {
-        return OkResult;
-    }
-
-    public static ResultOrError<TValue> Ok<TValue>(TValue value)
-        where TValue : notnull
-    {
-        return new ResultOrError<TValue>(value);
-    }
-
-    public static ResultOrError<TValue> Error<TValue>(Error error)
-        where TValue : notnull
-    {
-        return new ResultOrError<TValue>(error);
     }
 }

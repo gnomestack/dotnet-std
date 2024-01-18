@@ -9,12 +9,6 @@ public interface IResult<TValue, TError> : IResult,
     /// <summary>
     /// Desconstructs the result into its components.
     /// </summary>
-    /// <param name="value">The value of the result.</param>
-    void Deconstruct(out TValue value);
-
-    /// <summary>
-    /// Desconstructs the result into its components.
-    /// </summary>
     /// <param name="ok"><see langword="true"/> when ok; otherwise, <see langword="false" />.</param>
     /// <param name="value">The value of the result.</param>
     void Deconstruct(out bool ok, out TValue value);

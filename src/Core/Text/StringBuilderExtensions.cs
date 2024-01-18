@@ -102,6 +102,7 @@ public static class StringBuilderExtensions
     /// <returns>The string builder to chain.</returns>
     public static StringBuilder AppendCliArgument(this StringBuilder sb, string argument)
     {
+        // code is from medallion shell
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             // based on the logic from http://stackoverflow.com/questions/5510343/escape-command-line-arguments-in-c-sharp.

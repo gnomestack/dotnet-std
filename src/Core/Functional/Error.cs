@@ -48,7 +48,7 @@ public class Error : IError
 
     public virtual Exception ToException()
     {
-        return new Exception(this.Message);
+        return new ResultException(this.Message);
     }
 
     public override string ToString()
@@ -107,7 +107,7 @@ public class ArgumentOutOfRangeError : ArgumentError
 public class ArgumentNullError : ArgumentError
 {
     public ArgumentNullError(string paramName)
-        : base($"Argument {paramName} is null.")
+        : base(paramName, $"Argument {paramName} is null.")
     {
         this.ParamName = paramName;
     }
@@ -303,7 +303,7 @@ public class ExceptionError : Error
 
     public override Exception ToException()
     {
-        return this.ex ?? new Exception(this.Message);
+        return this.ex ?? new ResultException(this.Message);
     }
 
     public override string ToString()

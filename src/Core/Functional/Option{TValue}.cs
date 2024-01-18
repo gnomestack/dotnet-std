@@ -69,7 +69,7 @@ public class Option<TValue> :
     /// Implicitly converts <see cref="Nil"/> to <see cref="Option{TValue}"/>.
     /// </summary>
     /// <param name="_">The discarded value.</param>
-    public static implicit operator Option<TValue>(Void _)
+    public static implicit operator Option<TValue>(Nil _)
         => new(OptionState.None, default!);
 
     public static implicit operator Option<TValue>(DBNull _)
@@ -98,7 +98,7 @@ public class Option<TValue> :
         return value switch
         {
             IOptional optional => optional.IsNone,
-            _ => Void.IsVoid(value),
+            _ => Nil.IsNil(value),
         };
     }
 
@@ -330,6 +330,14 @@ public class Option<TValue> :
         return this;
     }
 
+    public Option<TValue> Inspect(Action<TValue> action)
+    {
+        if (this.IsSome)
+            action(this.value);
+
+        return this;
+    }
+
     public bool Match(Func<TValue, bool> predicate)
     {
         if (this.IsNone)
@@ -349,7 +357,7 @@ public class Option<TValue> :
         where TOther : notnull
         => this.IsNone ? Option.None<TOther>() : Option.Some(map(this.value));
 
-    public Option<TOther> Map<TOther>(Func<TValue, TOther> map, TOther value)
+    public Option<TOther> MapOrDefault<TOther>(Func<TValue, TOther> map, TOther value)
         where TOther : notnull
     {
         if (this.IsNone)
@@ -358,7 +366,7 @@ public class Option<TValue> :
         return new Option<TOther>(OptionState.Some, map(this.value));
     }
 
-    public Option<TOther> Map<TOther>(Func<TValue, TOther> map, Func<TOther> generate)
+    public Option<TOther> MapOrDefault<TOther>(Func<TValue, TOther> map, Func<TOther> generate)
         where TOther : notnull
     {
         if (this.IsNone)
@@ -378,6 +386,21 @@ public class Option<TValue> :
     }
 
     public async Task<Option<TOther>> MapAsync<TOther>(
+        Func<TValue, CancellationToken, Task<TOther>> map,
+        CancellationToken cancellationToken = default)
+        where TOther : notnull
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (this.IsNone)
+            return Option<TOther>.None();
+
+        var value = await map(this.value!, cancellationToken)
+            .ConfigureAwait(false);
+
+        return value;
+    }
+
+    public async Task<Option<TOther>> MapOrDefaultAsync<TOther>(
         Func<TValue, Task<TOther>> map,
         Func<Task<TOther>> generate)
         where TOther : notnull
@@ -395,22 +418,7 @@ public class Option<TValue> :
         return new Option<TOther>(OptionState.Some, value);
     }
 
-    public async Task<Option<TOther>> MapAsync<TOther>(
-        Func<TValue, CancellationToken, Task<TOther>> map,
-        CancellationToken cancellationToken = default)
-        where TOther : notnull
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        if (this.IsNone)
-            return Option<TOther>.None();
-
-        var value = await map(this.value!, cancellationToken)
-            .ConfigureAwait(false);
-
-        return value;
-    }
-
-    public async Task<Option<TOther>> MapAsync<TOther>(
+    public async Task<Option<TOther>> MapOrDefaultAsync<TOther>(
         Func<TValue, CancellationToken, Task<TOther>> map,
         Func<CancellationToken, Task<TOther>> generate,
         CancellationToken cancellationToken = default)
@@ -470,7 +478,7 @@ public class Option<TValue> :
     public Option<TValue> Replace(TValue value)
     {
         this.value = value!;
-        this.state = Void.IsVoid(value) ? OptionState.None : OptionState.Some;
+        this.state = Nil.IsNil(value) ? OptionState.None : OptionState.Some;
         return this;
     }
 
@@ -488,6 +496,9 @@ public class Option<TValue> :
         this.state = OptionState.None;
         return value;
     }
+
+    public Result<TValue> ToResult()
+        => this.IsNone ? Result.Error<TValue>(new ResultException("No value for option")) : Result.Ok(this.value!);
 
     /// <summary>
     /// Returns the underlying value if it is <c>Some</c>, otherwise, throws

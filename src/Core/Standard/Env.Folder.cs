@@ -12,14 +12,27 @@ public enum KnownDirectoryOption
 
 public static partial class Env
 {
-    public static string Directory(KnownDirectory directory)
+    public static string GetDirectory(KnownDirectory directory)
     {
+        if (directory == KnownDirectory.Downloads)
+            return Path.Combine(GetDirectory(KnownDirectory.Home), "Downloads");
+
         var dir = (System.Environment.SpecialFolder)directory;
         return Environment.GetFolderPath(dir);
     }
 
-    public static string Directory(KnownDirectory directory, KnownDirectoryOption option)
+    public static string GetDirectory(KnownDirectory directory, KnownDirectoryOption option)
     {
+        if (directory == KnownDirectory.Downloads)
+        {
+            var home = GetDirectory(KnownDirectory.Home);
+            var downloads = Path.Combine(home, "Downloads");
+            if (option == KnownDirectoryOption.Create && !System.IO.Directory.Exists(downloads))
+                System.IO.Directory.CreateDirectory(downloads);
+
+            return downloads;
+        }
+
         return Environment.GetFolderPath((Environment.SpecialFolder)directory, (Environment.SpecialFolderOption)option);
     }
 }
