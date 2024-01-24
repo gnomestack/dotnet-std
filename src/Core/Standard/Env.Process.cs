@@ -31,19 +31,19 @@ public static partial class Env
             return false;
 
         // false positive of a deference without the !
-        if (Vars!.TryGet("DEBIAN_FRONTEND", out var frontend) &&
+        if (TryGet("DEBIAN_FRONTEND", out var frontend) &&
             frontend.Equals("noninteractive", StringComparison.OrdinalIgnoreCase))
             return false;
 
-        if (Vars.TryGet("CI", out var ci) &&
+        if (TryGet("CI", out var ci) &&
             ci.Equals("true", StringComparison.OrdinalIgnoreCase))
             return false;
 
-        if (Vars.TryGet("TF_BUILD", out var tfBuild) &&
+        if (TryGet("TF_BUILD", out var tfBuild) &&
             tfBuild.Equals("true", StringComparison.OrdinalIgnoreCase))
             return false;
 
-        if (Vars.TryGet("JENKINS_URL", out var jenkinsUrl) &&
+        if (TryGet("JENKINS_URL", out var jenkinsUrl) &&
             !jenkinsUrl.IsNullOrWhiteSpace())
             return false;
 

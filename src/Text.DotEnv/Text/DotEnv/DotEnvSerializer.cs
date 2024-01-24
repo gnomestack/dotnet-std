@@ -133,7 +133,7 @@ public static class DotEnvSerializer
 
         if (expand)
         {
-            Func<string, string?> getVariable = (name) => Env.GetVar(name);
+            Func<string, string?> getVariable = (name) => Env.Get(name);
             if (options?.ExpandVariables is not null)
             {
                 var ev = options.ExpandVariables;
@@ -145,7 +145,7 @@ public static class DotEnvSerializer
                     if (ev.TryGetValue(name, out value))
                         return value;
 
-                    value = Env.GetVar(name);
+                    value = Env.Get(name);
 
                     return value;
                 };
@@ -156,13 +156,13 @@ public static class DotEnvSerializer
                 UnixAssignment = false,
                 UnixCustomErrorMessage = false,
                 GetVariable = getVariable,
-                SetVariable = Env.SetVar,
+                SetVariable = Env.Set,
             };
             foreach (var entry in doc)
             {
                 if (entry is EnvNameValuePair pair)
                 {
-                    var v = Env.ExpandVars(pair.RawValue, eso);
+                    var v = Env.Expand(pair.RawValue, eso);
 
                     // Only set the value if it has changed.
                     if (v.Length != pair.RawValue.Length || !v.SequenceEqual(pair.RawValue))

@@ -19,14 +19,14 @@ static partial class Env
         BashInterpolation,
     }
 
-    public static string ExpandVars(string template, EnvExpandOptions? options = null)
-        => ExpandVars(template.AsSpan(), options).ToString();
+    public static string Expand(string template, EnvExpandOptions? options = null)
+        => Expand(template.AsSpan(), options).ToString();
 
-    public static ReadOnlySpan<char> ExpandVars(ReadOnlySpan<char> template, EnvExpandOptions? options = null)
+    public static ReadOnlySpan<char> Expand(ReadOnlySpan<char> template, EnvExpandOptions? options = null)
     {
         var o = options ?? new EnvExpandOptions();
-        Func<string, string?> getValue = o.GetVariable ?? (name => Environment.GetEnvironmentVariable(name));
-        var setValue = o.SetVariable ?? ((name, value) => Environment.SetEnvironmentVariable(name, value));
+        Func<string, string?> getValue = o.GetVariable ?? Environment.GetEnvironmentVariable;
+        var setValue = o.SetVariable ?? Environment.SetEnvironmentVariable;
         var tokenBuilder = new StringBuilder();
         var output = new StringBuilder();
         var kind = TokenKind.None;

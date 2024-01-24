@@ -102,13 +102,13 @@ public class PsPathRegistry
         if (!entry.EnvVariable.IsNullOrWhiteSpace())
         {
             var cached = !entry.CachedPath.IsNullOrWhiteSpace();
-            var envPath = Env.GetVar(entry.EnvVariable);
+            var envPath = Env.Get(entry.EnvVariable);
             if (!envPath.IsNullOrWhiteSpace())
             {
                 if (cached && envPath == entry.CachedPath)
                     return envPath;
 
-                envPath = Env.ExpandVars(envPath);
+                envPath = Env.Expand(envPath);
                 envPath = Path.GetFullPath(envPath);
                 if (cached && entry.CachedPath == envPath)
                     return envPath;
@@ -139,7 +139,7 @@ public class PsPathRegistry
             foreach (var attempt in entry.Windows)
             {
                 exe = attempt;
-                exe = Env.ExpandVars(exe);
+                exe = Env.Expand(exe);
                 exe = Ps.Which(exe);
                 if (exe is null)
                 {
@@ -159,7 +159,7 @@ public class PsPathRegistry
             foreach (var attempt in entry.Darwin)
             {
                 exe = attempt;
-                exe = Env.ExpandVars(exe);
+                exe = Env.Expand(exe);
                 exe = Ps.Which(exe);
                 if (exe is null)
                 {
@@ -175,7 +175,7 @@ public class PsPathRegistry
         foreach (var attempt in entry.Linux)
         {
             exe = attempt;
-            exe = Env.ExpandVars(exe);
+            exe = Env.Expand(exe);
             exe = Ps.Which(exe);
             if (exe is null)
             {

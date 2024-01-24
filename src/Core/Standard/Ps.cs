@@ -571,16 +571,16 @@ public sealed partial class Ps
     public PsPipe Pipe(string fileName, PsArgs? args = null, PsStartInfo? startInfo = null)
         => new PsPipe(this).Pipe(fileName, args, startInfo);
 
-    public PsPipeAsync PipeDefered(SplattableCommand splattable, PsStartInfo? startInfo = null, CancellationToken cancellationToken = default)
+    public PsPipeAsync PipeDeferred(SplattableCommand splattable, PsStartInfo? startInfo = null, CancellationToken cancellationToken = default)
         => new PsPipeAsync(this).Pipe(splattable, startInfo, cancellationToken);
 
-    public PsPipeAsync PipeDefered(Ps ps, CancellationToken cancellationToken = default)
+    public PsPipeAsync PipeDeferred(Ps ps, CancellationToken cancellationToken = default)
         => new PsPipeAsync(this).Pipe(ps, cancellationToken);
 
-    public PsPipeAsync PipeDefered(PsChild child, CancellationToken cancellationToken = default)
+    public PsPipeAsync PipeDeferred(PsChild child, CancellationToken cancellationToken = default)
         => new PsPipeAsync(this).Pipe(child, cancellationToken);
 
-    public PsPipeAsync PipeDefered(
+    public PsPipeAsync PipeDeferred(
         string fileName,
         PsArgs? args = null,
         PsStartInfo? startInfo = null,

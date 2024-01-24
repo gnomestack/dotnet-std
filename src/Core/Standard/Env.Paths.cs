@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 
 namespace GnomeStack.Standard;
 
@@ -64,7 +65,7 @@ public static partial class Env
 
     public static void RemovePath(string path, EnvironmentVariableTarget target = EnvironmentVariableTarget.Process)
     {
-        var paths = SplitPath(target);
+        var paths = SplitPath(target).ToArray();
         if (!InternalHasPath(path, paths))
             return;
 
@@ -94,6 +95,7 @@ public static partial class Env
         return false;
     }
 
+    [SuppressMessage("Critical Code Smell", "S3218:Inner class members should not shadow outer class \"static\" or type members")]
     public sealed class EnvPaths : IEnumerable<string>
     {
         public void Add(string path, bool prepend = false, EnvironmentVariableTarget target = EnvironmentVariableTarget.Process)
@@ -102,6 +104,7 @@ public static partial class Env
         public bool Contains(string path, EnvironmentVariableTarget target = EnvironmentVariableTarget.Process)
             => HasPath(path, target);
 
+        // ReSharper disable once MemberHidesStaticFromOuterClass
         public void Remove(string path, EnvironmentVariableTarget target = EnvironmentVariableTarget.Process)
             => RemovePath(path, target);
 

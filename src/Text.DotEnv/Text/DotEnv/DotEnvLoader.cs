@@ -50,7 +50,7 @@ public static class DotEnvLoader
         {
             if (entry is EnvNameValuePair var && (options.OverrideEnvironment || !Env.Vars.Contains(var.Name)))
             {
-                Env.SetVar(var.Name, var.Value);
+                Env.Set(var.Name, var.Value);
             }
         }
     }

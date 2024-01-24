@@ -57,7 +57,7 @@ public partial class Ps
 
         for (var i = 0; i < pathSegments.Count; i++)
         {
-            pathSegments[i] = Env.ExpandVars(pathSegments[i]);
+            pathSegments[i] = Env.Expand(pathSegments[i]);
         }
 
         foreach (var pathSegment in pathSegments)
@@ -68,7 +68,7 @@ public partial class Ps
             IEnumerable<string> matches = Array.Empty<string>();
             if (Env.IsWindows)
             {
-                var pathExt = Env.GetVar("PATHEXT");
+                var pathExt = Env.Get("PATHEXT");
                 if (pathExt.IsNullOrWhiteSpace())
                 {
                     // XP's system default value for PATHEXT system variable

@@ -99,7 +99,7 @@ public class Ps_Tests
         }
 
         var result = await Ps.New("echo", "my test")
-            .PipeDefered("grep", "test")
+            .PipeDeferred("grep", "test")
             .Pipe("cat")
             .OutputAsync();
 
