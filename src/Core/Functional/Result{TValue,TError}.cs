@@ -1,32 +1,31 @@
 // ReSharper disable ParameterHidesMember
 namespace GnomeStack.Functional;
 
+
 #pragma warning disable S4035 // Classes implementing "IEquatable<T>" should be sealed
 public class Result<TValue, TError> : IResult<TValue, TError>
-    where TError : notnull
-    where TValue : notnull
 {
-    private ResultState state;
-
     private TValue value;
 
     private TError error;
+
+    private ResultState state;
+
+    public Result(TValue value)
+        : this(ResultState.Ok, value, default!)
+    {
+    }
+
+    public Result(TError error)
+        : this(ResultState.Err, default!, error)
+    {
+    }
 
     internal Result(ResultState state, TValue value, TError error)
     {
         this.state = state;
         this.value = value;
         this.error = error;
-    }
-
-    internal protected Result(TValue value)
-        : this(ResultState.Ok, value, default!)
-    {
-    }
-
-    internal protected Result(TError error)
-        : this(ResultState.Err, default!, error)
-    {
     }
 
     public bool IsOk => this.state == ResultState.Ok;
@@ -36,11 +35,17 @@ public class Result<TValue, TError> : IResult<TValue, TError>
     public static implicit operator Result<TValue, TError>(TValue value)
         => Ok(value);
 
+    public static implicit operator Result<TValue, TError>(TError error)
+        => Error(error);
+
+    public static implicit operator Result<TValue, TError>(ValueResult<TValue, TError> value)
+        => value.IsOk ? new(value.Unwrap()) : new(value.UnwrapError());
+
     public static implicit operator Task<Result<TValue, TError>>(Result<TValue, TError> value)
         => Task.FromResult(value);
 
-    public static implicit operator Result<TValue, TError>(TError error)
-        => Error(error);
+    public static implicit operator ValueTask<Result<TValue, TError>>(Result<TValue, TError> value)
+        => new(value);
 
     public static implicit operator Result<TValue, TError>(Option<TValue> value)
     {
@@ -107,7 +112,7 @@ public class Result<TValue, TError> : IResult<TValue, TError>
         if (other.IsError)
             return new Result<TValue, TError>(other.UnwrapError());
 
-        return new Result<TValue, TError>(other.Unwrap());
+        return new(other.Unwrap());
     }
 
     /// <summary>
@@ -135,7 +140,7 @@ public class Result<TValue, TError> : IResult<TValue, TError>
         if (this.IsError)
             return this.error;
 
-        return new Result<TValue, TError>(other);
+        return new(other);
     }
 
     /// <summary>
@@ -149,7 +154,7 @@ public class Result<TValue, TError> : IResult<TValue, TError>
         if (this.IsError)
             return this.error;
 
-        return new Result<TValue, TError>(other());
+        return new(other());
     }
 
     /// <summary>
@@ -329,13 +334,12 @@ public class Result<TValue, TError> : IResult<TValue, TError>
         where TOther : notnull
     {
         if (this.IsError)
-            return new Result<TOther, TError>(this.error);
+            return new(this.error);
 
-        return new Result<TOther, TError>(other);
+        return new(other);
     }
 
     public Result<TOther, TError> Map<TOther>(Func<TValue, TOther> map)
-        where TOther : notnull
     {
         if (this.IsError)
             return this.error;
@@ -344,7 +348,6 @@ public class Result<TValue, TError> : IResult<TValue, TError>
     }
 
     public Result<TOther, TError> Map<TOther>(Func<TValue, TOther> map, TOther defaultValue)
-        where TOther : notnull
     {
         if (this.IsError)
             return defaultValue;
@@ -353,7 +356,6 @@ public class Result<TValue, TError> : IResult<TValue, TError>
     }
 
     public Result<TOther, TError> Map<TOther>(Func<TValue, TOther> map, Func<TOther> generate)
-        where TOther : notnull
     {
         if (this.IsError)
             return generate();
@@ -362,25 +364,23 @@ public class Result<TValue, TError> : IResult<TValue, TError>
     }
 
     public async Task<Result<TOther, TError>> MapAsync<TOther>(Task<TOther> task)
-        where TOther : notnull
     {
         if (this.IsError)
-            return new Result<TOther, TError>(this.error);
+            return new(this.error);
 
         var other = await task
             .ConfigureAwait(false);
-        return new Result<TOther, TError>(other);
+        return new(other);
     }
 
     public async Task<Result<TOther, TError>> MapAsync<TOther>(Func<TValue, Task<TOther>> map)
-        where TOther : notnull
     {
         if (this.IsError)
-            return new Result<TOther, TError>(this.error);
+            return new(this.error);
 
         var other = await map(this.value!)
             .ConfigureAwait(false);
-        return new Result<TOther, TError>(other);
+        return new(other);
     }
 
     public async Task<Result<TOther, TError>> MapAsync<TOther>(
@@ -389,11 +389,11 @@ public class Result<TValue, TError> : IResult<TValue, TError>
         where TOther : notnull
     {
         if (this.IsError)
-            return new Result<TOther, TError>(this.error);
+            return new(this.error);
 
         var other = await map(this.value!, cancellationToken)
             .ConfigureAwait(false);
-        return new Result<TOther, TError>(other);
+        return new(other);
     }
 
     public Result<TValue, TOtherError> MapError<TOtherError>(Func<TError, TOtherError> map)
@@ -409,10 +409,10 @@ public class Result<TValue, TError> : IResult<TValue, TError>
         where TOtherError : notnull
     {
         if (!this.IsOk)
-            return new Result<TValue, TOtherError>(this.value!);
+            return new(this.value!);
 
         var other = await map(this.error).ConfigureAwait(false);
-        return new Result<TValue, TOtherError>(other);
+        return new(other);
     }
 
     public Result<TOtherValue, TError> MapOrDefault<TOtherValue>(
@@ -421,7 +421,7 @@ public class Result<TValue, TError> : IResult<TValue, TError>
         where TOtherValue : notnull
     {
         if (this.IsError)
-            return new Result<TOtherValue, TError>(defaultValue);
+            return new(defaultValue);
 
         return map(this.value!);
     }
@@ -432,7 +432,7 @@ public class Result<TValue, TError> : IResult<TValue, TError>
         where TOtherValue : notnull
     {
         if (this.IsError)
-            return new Result<TOtherValue, TError>(generate());
+            return new(generate());
 
         return map(this.value!);
     }
@@ -443,12 +443,12 @@ public class Result<TValue, TError> : IResult<TValue, TError>
         where TOtherValue : notnull
     {
         if (this.IsError)
-            return new Result<TOtherValue, TError>(defaultValue);
+            return new(defaultValue);
 
         var other = await map(this.value!)
             .ConfigureAwait(false);
 
-        return new Result<TOtherValue, TError>(other);
+        return new(other);
     }
 
     public async Task<Result<TOtherValue, TError>> MapOrDefaultAsync<TOtherValue>(
@@ -457,12 +457,12 @@ public class Result<TValue, TError> : IResult<TValue, TError>
         where TOtherValue : notnull
     {
         if (this.IsError)
-            return new Result<TOtherValue, TError>(generate());
+            return new(generate());
 
         var other = await map(this.value!)
             .ConfigureAwait(false);
 
-        return new Result<TOtherValue, TError>(other);
+        return new(other);
     }
 
     public async Task<Result<TOtherValue, TError>> MapOrDefaultAsync<TOtherValue>(
@@ -475,13 +475,13 @@ public class Result<TValue, TError> : IResult<TValue, TError>
             var defaulted = await generate()
                 .ConfigureAwait(false);
 
-            return new Result<TOtherValue, TError>(defaulted);
+            return new(defaulted);
         }
 
         var other = await map(this.value!)
             .ConfigureAwait(false);
 
-        return new Result<TOtherValue, TError>(other);
+        return new(other);
     }
 
     public async Task<Result<TOtherValue, TError>> MapOrDefaultAsync<TOtherValue>(
@@ -496,13 +496,13 @@ public class Result<TValue, TError> : IResult<TValue, TError>
             var defaulted = await generate(cancellationToken)
                 .ConfigureAwait(false);
 
-            return new Result<TOtherValue, TError>(defaulted);
+            return new(defaulted);
         }
 
         var other = await map(this.value!, cancellationToken)
             .ConfigureAwait(false);
 
-        return new Result<TOtherValue, TError>(other);
+        return new(other);
     }
 
     public Result<TValue, TError> Or(Result<TValue, TError> other)
@@ -521,7 +521,7 @@ public class Result<TValue, TError> : IResult<TValue, TError>
         if (this.IsOk)
             return this;
 
-        return new Result<TValue, TError>(other());
+        return new(other());
     }
 
     public Result<TValue, TError> Or(Func<Result<TValue, TError>> other)

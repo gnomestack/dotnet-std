@@ -1,12 +1,12 @@
 namespace GnomeStack.Functional;
 
-public readonly struct ValueResult<TValue, TError> : IResult<TValue, TError>
+public readonly struct ValueResult<TValue> : IResult<TValue, Error>
 {
     private readonly ResultState state;
 
     private readonly TValue value;
 
-    private readonly TError error;
+    private readonly Error error;
 
     public ValueResult(TValue value)
     {
@@ -15,7 +15,7 @@ public readonly struct ValueResult<TValue, TError> : IResult<TValue, TError>
         this.error = default!;
     }
 
-    public ValueResult(TError error)
+    public ValueResult(Error error)
     {
         this.state = ResultState.Err;
         this.value = default!;
@@ -26,49 +26,80 @@ public readonly struct ValueResult<TValue, TError> : IResult<TValue, TError>
 
     public bool IsError => this.state == ResultState.Err;
 
-    public static implicit operator ValueResult<TValue, TError>(TValue value)
+    public static implicit operator ValueResult<TValue>(TValue value)
         => new(value);
 
-    public static implicit operator ValueResult<TValue, TError>(TError error)
-        => new(error);
-
-    public static implicit operator Task<ValueResult<TValue, TError>>(ValueResult<TValue, TError> value)
+    public static implicit operator Task<ValueResult<TValue>>(ValueResult<TValue> value)
         => Task.FromResult(value);
 
-    public static implicit operator ValueTask<ValueResult<TValue, TError>>(ValueResult<TValue, TError> value)
+    public static implicit operator ValueTask<ValueResult<TValue>>(ValueResult<TValue> value)
         => new(value);
 
-    public static implicit operator ValueResult<TValue, TError>(Result<TValue, TError> result)
+    public static implicit operator ValueResult<TValue>(Result<TValue> result)
         => result.IsOk ? new(result.Unwrap()) : new(result.UnwrapError());
 
-    public static bool operator ==(ValueResult<TValue, TError>? left, IResult<TValue, TError>? right)
+    public static implicit operator ValueResult<TValue>(Result<TValue, Error> result)
+        => result.IsOk ? new(result.Unwrap()) : new(result.UnwrapError());
+
+    public static implicit operator ValueResult<TValue>(ValueResult<TValue, Error> result)
+        => result.IsOk ? new(result.Unwrap()) : new(result.UnwrapError());
+
+    public static implicit operator ValueResult<TValue>(Error error)
+        => new(error);
+
+    public static implicit operator ValueResult<TValue>(Exception exception)
+        => new(Functional.Error.Convert(exception));
+
+    public static implicit operator ValueResult<TValue>(Option<TValue> value)
+    {
+        var valueName = typeof(TValue).FullName;
+        var inner = value.Expect(
+            $"Implicit conversion from Option<{valueName}> to Result<{valueName}> failed because the option was None.");
+
+        return new(inner);
+    }
+
+    public static implicit operator ValueResult<TValue>(Option<Error> error)
+    {
+        var valueName = typeof(TValue).FullName;
+        var errorName = typeof(Error).FullName;
+        var inner = error.Expect(
+            $"Implicit conversion from Option<{Error}> to Result<{valueName}> failed because the option was None.");
+
+        return new(inner);
+    }
+
+    public static bool operator ==(ValueResult<TValue>? left, IResult<TValue, Error>? right)
     {
         return Equals(left, right);
     }
 
-    public static bool operator !=(ValueResult<TValue, TError>? left, IResult<TValue, TError>? right)
+    public static bool operator !=(ValueResult<TValue>? left, IResult<TValue, Error>? right)
     {
         return !Equals(left, right);
     }
 
-    public static bool operator ==(ValueResult<TValue, TError>? left, TValue? right)
+    public static bool operator ==(ValueResult<TValue>? left, TValue? right)
     {
         return Equals(left, right);
     }
 
-    public static bool operator !=(ValueResult<TValue, TError>? left, TValue? right)
+    public static bool operator !=(ValueResult<TValue>? left, TValue? right)
     {
         return !Equals(left, right);
     }
 
-    public static Result<TValue, TError> Ok(TValue value)
-        => new(ResultState.Ok, value, default!);
+    public static ValueResult<TValue> Ok(TValue value)
+        => new(value);
 
-    public static Result<TValue, TError> Ok(Func<TValue> generate)
-        => new(ResultState.Ok, generate(), default!);
+    public static ValueResult<TValue> Ok(Func<TValue> generate)
+        => new(generate());
 
-    public static Result<TValue, TError> Error(TError error)
-        => new(ResultState.Err, default!, error);
+    public static Result<TValue> Error(Error error)
+        => new(error);
+
+    public static Result<TValue> Exception(Error error)
+        => new(error);
 
     /// <summary>
     /// Boolean AND operation on two results where Ok is true and Err is false. If both are Ok, the
@@ -76,7 +107,7 @@ public readonly struct ValueResult<TValue, TError> : IResult<TValue, TError>
     /// </summary>
     /// <param name="other">The second value.</param>
     /// <returns>A result.</returns>
-    public ValueResult<TValue, TError> And(IResult<TValue, TError> other)
+    public ValueResult<TValue> And(IResult<TValue, Error> other)
     {
         if (this.IsError)
             return this;
@@ -93,7 +124,7 @@ public readonly struct ValueResult<TValue, TError> : IResult<TValue, TError>
     /// </summary>
     /// <param name="other">The second value.</param>
     /// <returns>A result.</returns>
-    public ValueResult<TValue, TError> And(ValueResult<TValue, TError> other)
+    public ValueResult<TValue> And(ValueResult<TValue> other)
     {
         if (this.IsError)
             return this;
@@ -107,7 +138,7 @@ public readonly struct ValueResult<TValue, TError> : IResult<TValue, TError>
     /// </summary>
     /// <param name="other">The second value.</param>
     /// <returns>A result.</returns>
-    public ValueResult<TValue, TError> And(TValue other)
+    public ValueResult<TValue> And(TValue other)
     {
         if (this.IsError)
             return this;
@@ -121,10 +152,10 @@ public readonly struct ValueResult<TValue, TError> : IResult<TValue, TError>
     /// </summary>
     /// <param name="other">The second value is lazily generated by the function.</param>
     /// <returns>A result.</returns>
-    public ValueResult<TValue, TError> And(Func<TValue> other)
+    public ValueResult<TValue> And(Func<TValue> other)
     {
         if (this.IsError)
-            return this.error;
+            return this;
 
         return new(other());
     }
@@ -136,11 +167,11 @@ public readonly struct ValueResult<TValue, TError> : IResult<TValue, TError>
     /// <typeparam name="TOtherValue">The type of the second value.</typeparam>
     /// <param name="other">The second value is generated by the function.</param>
     /// <returns>A result.</returns>
-    public ValueResult<TOtherValue, TError> And<TOtherValue>(Func<Result<TOtherValue, TError>> other)
+    public ValueResult<TOtherValue> And<TOtherValue>(Func<ValueResult<TOtherValue>> other)
         where TOtherValue : notnull
     {
         if (this.IsError)
-            return this.error;
+            return new(this.error);
 
         return other();
     }
@@ -151,7 +182,7 @@ public readonly struct ValueResult<TValue, TError> : IResult<TValue, TError>
         value = this.value;
     }
 
-    public void Deconstruct(out bool ok, out TValue? value, out TError? error)
+    public void Deconstruct(out bool ok, out TValue? value, out Error? error)
     {
         ok = this.IsOk;
         value = this.value;
@@ -178,7 +209,7 @@ public readonly struct ValueResult<TValue, TError> : IResult<TValue, TError>
     /// <param name="message">The message to use.</param>
     /// <returns>The error if the state is Error.</returns>
     /// <exception cref="ResultException">Thrown when the state is Ok.</exception>
-    public TError ExpectError(string message)
+    public Error ExpectError(string message)
     {
         if (this.IsOk)
             throw new ResultException(message);
@@ -186,7 +217,7 @@ public readonly struct ValueResult<TValue, TError> : IResult<TValue, TError>
         return this.error;
     }
 
-    public bool Equals(IResult<TValue, TError>? other)
+    public bool Equals(IResult<TValue, Error>? other)
     {
         if (other is null)
             return false;
@@ -197,7 +228,7 @@ public readonly struct ValueResult<TValue, TError> : IResult<TValue, TError>
         if (this.IsOk)
             return EqualityComparer<TValue>.Default.Equals(this.value, other.Unwrap());
 
-        return EqualityComparer<TError>.Default.Equals(this.error, other.UnwrapError());
+        return EqualityComparer<Error>.Default.Equals(this.error, other.UnwrapError());
     }
 
     public bool Equals(TValue? other)
@@ -213,7 +244,7 @@ public readonly struct ValueResult<TValue, TError> : IResult<TValue, TError>
 
     public override bool Equals(object? obj)
     {
-        return obj is IResult<TValue, TError> other && this.Equals(other);
+        return obj is IResult<TValue, Error> other && this.Equals(other);
     }
 
 #pragma warning disable S2328 // "GetHashCode" should not reference mutable fields
@@ -228,13 +259,13 @@ public readonly struct ValueResult<TValue, TError> : IResult<TValue, TError>
             yield return this.value;
     }
 
-    public IEnumerable<TError> AsErrorEnumerable()
+    public IEnumerable<Error> AsErrorEnumerable()
     {
         if (this.IsError)
             yield return this.error;
     }
 
-    public ValueResult<TValue, TError> Inspect(Action<TValue> action)
+    public ValueResult<TValue> Inspect(Action<TValue> action)
     {
         if (this.IsError)
             return this;
@@ -260,7 +291,7 @@ public readonly struct ValueResult<TValue, TError> : IResult<TValue, TError>
             .ConfigureAwait(false);
     }
 
-    public ValueResult<TValue, TError> InspectError(Action<TError> action)
+    public ValueResult<TValue> InspectError(Action<Error> action)
     {
         if (this.IsOk)
             return this;
@@ -269,7 +300,7 @@ public readonly struct ValueResult<TValue, TError> : IResult<TValue, TError>
         return this;
     }
 
-    public Task InspectErrorAsync(Func<TError, Task> action)
+    public Task InspectErrorAsync(Func<Error, Task> action)
     {
         if (this.IsOk)
             return Task.CompletedTask;
@@ -285,7 +316,7 @@ public readonly struct ValueResult<TValue, TError> : IResult<TValue, TError>
         return predicate(this.value!);
     }
 
-    public bool MatchError(Func<TError, bool> predicate)
+    public bool MatchError(Func<Error, bool> predicate)
     {
         if (this.IsOk)
             return false;
@@ -293,7 +324,7 @@ public readonly struct ValueResult<TValue, TError> : IResult<TValue, TError>
         return predicate(this.error!);
     }
 
-    public ValueResult<TOther, TError> Map<TOther>(TOther other)
+    public ValueResult<TOther, Error> Map<TOther>(TOther other)
         where TOther : notnull
     {
         if (this.IsError)
@@ -302,7 +333,7 @@ public readonly struct ValueResult<TValue, TError> : IResult<TValue, TError>
         return new(other);
     }
 
-    public ValueResult<TOther, TError> Map<TOther>(Func<TValue, TOther> map)
+    public ValueResult<TOther> Map<TOther>(Func<TValue, TOther> map)
     {
         if (this.IsError)
             return new(this.error);
@@ -310,7 +341,7 @@ public readonly struct ValueResult<TValue, TError> : IResult<TValue, TError>
         return new(map(this.value!));
     }
 
-    public ValueResult<TOther, TError> Map<TOther>(Func<TValue, TOther> map, TOther defaultValue)
+    public ValueResult<TOther> Map<TOther>(Func<TValue, TOther> map, TOther defaultValue)
     {
         if (this.IsError)
             return new(defaultValue);
@@ -318,7 +349,7 @@ public readonly struct ValueResult<TValue, TError> : IResult<TValue, TError>
         return new(map(this.value!));
     }
 
-    public ValueResult<TOther, TError> Map<TOther>(Func<TValue, TOther> map, Func<TOther> generate)
+    public ValueResult<TOther> Map<TOther>(Func<TValue, TOther> map, Func<TOther> generate)
     {
         if (this.IsError)
             return new(generate());
@@ -326,7 +357,7 @@ public readonly struct ValueResult<TValue, TError> : IResult<TValue, TError>
         return new(map(this.value!));
     }
 
-    public async Task<ValueResult<TOther, TError>> MapAsync<TOther>(Task<TOther> task)
+    public async Task<ValueResult<TOther>> MapAsync<TOther>(Task<TOther> task)
     {
         if (this.IsError)
             return new(this.error);
@@ -336,7 +367,7 @@ public readonly struct ValueResult<TValue, TError> : IResult<TValue, TError>
         return new(other);
     }
 
-    public async Task<ValueResult<TOther, TError>> MapAsync<TOther>(Func<TValue, Task<TOther>> map)
+    public async Task<ValueResult<TOther>> MapAsync<TOther>(Func<TValue, Task<TOther>> map)
     {
         if (this.IsError)
             return new(this.error);
@@ -346,7 +377,7 @@ public readonly struct ValueResult<TValue, TError> : IResult<TValue, TError>
         return new(other);
     }
 
-    public async Task<ValueResult<TOther, TError>> MapAsync<TOther>(
+    public async Task<ValueResult<TOther>> MapAsync<TOther>(
         Func<TValue, CancellationToken, Task<TOther>> map,
         CancellationToken cancellationToken = default)
         where TOther : notnull
@@ -359,7 +390,7 @@ public readonly struct ValueResult<TValue, TError> : IResult<TValue, TError>
         return new(other);
     }
 
-    public ValueResult<TValue, TOtherError> MapError<TOtherError>(Func<TError, TOtherError> map)
+    public ValueResult<TValue, TOtherError> MapError<TOtherError>(Func<Error, TOtherError> map)
         where TOtherError : notnull
     {
         if (this.IsError)
@@ -368,7 +399,7 @@ public readonly struct ValueResult<TValue, TError> : IResult<TValue, TError>
         return new(this.value!);
     }
 
-    public async Task<ValueResult<TValue, TOtherError>> MapErrorAsync<TOtherError>(Func<TError, Task<TOtherError>> map)
+    public async Task<ValueResult<TValue, TOtherError>> MapErrorAsync<TOtherError>(Func<Error, Task<TOtherError>> map)
         where TOtherError : notnull
     {
         if (!this.IsOk)
@@ -378,7 +409,7 @@ public readonly struct ValueResult<TValue, TError> : IResult<TValue, TError>
         return new(other);
     }
 
-    public ValueResult<TOtherValue, TError> MapOrDefault<TOtherValue>(
+    public ValueResult<TOtherValue> MapOrDefault<TOtherValue>(
         Func<TValue, TOtherValue> map,
         TOtherValue defaultValue)
         where TOtherValue : notnull
@@ -389,24 +420,24 @@ public readonly struct ValueResult<TValue, TError> : IResult<TValue, TError>
         return new(map(this.value!));
     }
 
-    public ValueResult<TOtherValue, TError> MapOrDefault<TOtherValue>(
+    public ValueResult<TOtherValue> MapOrDefault<TOtherValue>(
         Func<TValue, TOtherValue> map,
         Func<TOtherValue> generate)
         where TOtherValue : notnull
     {
         if (this.IsError)
-            return new(generate());
+            return new ValueResult<TOtherValue>(generate());
 
         return new(map(this.value!));
     }
 
-    public async Task<ValueResult<TOtherValue, TError>> MapOrDefaultAsync<TOtherValue>(
+    public async Task<ValueResult<TOtherValue>> MapOrDefaultAsync<TOtherValue>(
         Func<TValue, Task<TOtherValue>> map,
         TOtherValue defaultValue)
         where TOtherValue : notnull
     {
         if (this.IsError)
-            return new ValueResult<TOtherValue, TError>(defaultValue);
+            return new ValueResult<TOtherValue>(defaultValue);
 
         var other = await map(this.value!)
             .ConfigureAwait(false);
@@ -414,7 +445,7 @@ public readonly struct ValueResult<TValue, TError> : IResult<TValue, TError>
         return new(other);
     }
 
-    public async Task<ValueResult<TOtherValue, TError>> MapOrDefaultAsync<TOtherValue>(
+    public async Task<ValueResult<TOtherValue>> MapOrDefaultAsync<TOtherValue>(
         Func<TValue, Task<TOtherValue>> map,
         Func<TOtherValue> generate)
         where TOtherValue : notnull
@@ -428,7 +459,7 @@ public readonly struct ValueResult<TValue, TError> : IResult<TValue, TError>
         return new(other);
     }
 
-    public async Task<ValueResult<TOtherValue, TError>> MapOrDefaultAsync<TOtherValue>(
+    public async Task<ValueResult<TOtherValue>> MapOrDefaultAsync<TOtherValue>(
         Func<TValue, Task<TOtherValue>> map,
         Func<Task<TOtherValue>> generate)
         where TOtherValue : notnull
@@ -438,16 +469,16 @@ public readonly struct ValueResult<TValue, TError> : IResult<TValue, TError>
             var defaulted = await generate()
                 .ConfigureAwait(false);
 
-            return new(defaulted);
+            return new ValueResult<TOtherValue>(defaulted);
         }
 
         var other = await map(this.value!)
             .ConfigureAwait(false);
 
-        return new(other);
+        return new ValueResult<TOtherValue>(other);
     }
 
-    public async Task<ValueResult<TOtherValue, TError>> MapOrDefaultAsync<TOtherValue>(
+    public async Task<ValueResult<TOtherValue>> MapOrDefaultAsync<TOtherValue>(
         Func<TValue, CancellationToken, Task<TOtherValue>> map,
         Func<CancellationToken, Task<TOtherValue>> generate,
         CancellationToken cancellationToken = default)
@@ -459,16 +490,16 @@ public readonly struct ValueResult<TValue, TError> : IResult<TValue, TError>
             var defaulted = await generate(cancellationToken)
                 .ConfigureAwait(false);
 
-            return new(defaulted);
+            return new ValueResult<TOtherValue>(defaulted);
         }
 
         var other = await map(this.value!, cancellationToken)
             .ConfigureAwait(false);
 
-        return new(other);
+        return new ValueResult<TOtherValue>(other);
     }
 
-    public ValueResult<TValue, TError> Or(ValueResult<TValue, TError> other)
+    public ValueResult<TValue> Or(ValueResult<TValue> other)
     {
         if (this.IsOk)
             return this;
@@ -479,15 +510,15 @@ public readonly struct ValueResult<TValue, TError> : IResult<TValue, TError>
         return this;
     }
 
-    public ValueResult<TValue, TError> Or(Func<TValue> other)
+    public ValueResult<TValue> Or(Func<TValue> other)
     {
         if (this.IsOk)
             return this;
 
-        return new(other());
+        return new ValueResult<TValue>(other());
     }
 
-    public ValueResult<TValue, TError> Or(Func<ValueResult<TValue, TError>> other)
+    public ValueResult<TValue> Or(Func<ValueResult<TValue>> other)
     {
         if (this.IsOk)
             return this;
@@ -499,8 +530,8 @@ public readonly struct ValueResult<TValue, TError> : IResult<TValue, TError>
     /// Converts the error to an <see cref="Option{TError}"/>.
     /// </summary>
     /// <returns>Returns the optional error value.</returns>
-    public Option<TError> ToError()
-        => Option<TError>.From(this.error);
+    public Option<Error> ToError()
+        => Option<Error>.From(this.error);
 
     /// <summary>
     /// Converts the value to an <see cref="Option{TValue}"/>.
@@ -531,7 +562,7 @@ public readonly struct ValueResult<TValue, TError> : IResult<TValue, TError>
         return this.value!;
     }
 
-    public TError UnwrapError()
+    public Error UnwrapError()
     {
         if (this.IsOk)
             throw new ResultException($"UnwrapError is invalid when result has value: {this.value}.");
@@ -539,7 +570,7 @@ public readonly struct ValueResult<TValue, TError> : IResult<TValue, TError>
         return this.error;
     }
 
-    public TError UnwrapError(TError defaultError)
+    public Error UnwrapError(Error defaultError)
     {
         if (this.IsOk)
             return defaultError;
@@ -547,7 +578,7 @@ public readonly struct ValueResult<TValue, TError> : IResult<TValue, TError>
         return this.error;
     }
 
-    public TError UnwrapError(Func<TError> defaultError)
+    public Error UnwrapError(Func<Error> defaultError)
     {
         if (this.IsOk)
             return defaultError();
@@ -555,7 +586,7 @@ public readonly struct ValueResult<TValue, TError> : IResult<TValue, TError>
         return this.error;
     }
 
-    public ValueResult<TValue, TError> ThrowOnError()
+    public ValueResult<TValue> ThrowOnError()
     {
         ResultException.ThrowIfError(this);
 

@@ -56,7 +56,6 @@ public class OptionException : System.Exception
     /// Throws when the <paramref name="optional"/> is <c>None</c>.
     /// </exception>
     public static void ThrowIfNone<T>(IOptional<T> optional)
-        where T : notnull
     {
         if (optional.IsNone)
             throw new OptionException($"IOptional<{typeof(T).Name}> is None.");
@@ -72,7 +71,6 @@ public class OptionException : System.Exception
     /// Throws when the <paramref name="optional"/> is <c>None</c>.
     /// </exception>
     public static void ThrowIfNone<T>(Option<T> optional)
-        where T : notnull
     {
         if (optional.IsNone)
             throw new OptionException($"Option<{typeof(T).Name}> is None.");

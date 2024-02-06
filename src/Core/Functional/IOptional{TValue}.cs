@@ -7,7 +7,6 @@ namespace GnomeStack.Functional;
 public interface IOptional<TValue> : IOptional,
     IEquatable<IOptional<TValue>>,
     IEquatable<TValue>
-    where TValue : notnull
 {
     /// <summary>
     /// Deconstructs the <see cref="IOptional{TValue}"/> into

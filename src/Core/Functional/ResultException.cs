@@ -23,8 +23,6 @@ public class ResultException : System.Exception
     }
 
     public static void ThrowIfError<TValue, TError>(IResult<TValue, TError> result)
-        where TValue : notnull
-        where TError : notnull
     {
         if (!result.IsError)
             return;
@@ -46,8 +44,6 @@ public class ResultException : System.Exception
     }
 
     public static void ThrowIfError<TValue, TError>(IResult<TValue, TError> result, string errorMessage)
-        where TValue : notnull
-        where TError : notnull
     {
         if (!result.IsError)
             return;
@@ -66,27 +62,5 @@ public class ResultException : System.Exception
             throw new ResultException($"{errorMessage}: {message}");
 
         throw new ResultException($"{errorMessage}: {e}.");
-    }
-
-    public static void ThrowIfError<TValue, TError>(ValueResult<TValue, TError> optional)
-        where TValue : notnull
-        where TError : notnull
-    {
-        if (optional.IsError)
-        {
-            var o = optional.Error();
-            if (!o.IsNone)
-            {
-                var e = o.Unwrap();
-                if (e is Exception ex)
-                    throw new ResultException($"Result failed with error {ex.Message}", ex);
-
-                throw new ResultException($"Result failed with error {e}.");
-            }
-            else
-            {
-                o.Expect($"Result failed with error {o}.");
-            }
-        }
     }
 }

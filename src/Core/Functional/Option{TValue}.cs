@@ -26,7 +26,6 @@ namespace GnomeStack.Functional;
 public class Option<TValue> :
     IEquatable<Option<TValue>>,
     IOptional<TValue>
-    where TValue : notnull
 {
     private static readonly Option<TValue> s_none = new(OptionState.None, default!);
 
@@ -63,7 +62,7 @@ public class Option<TValue> :
     /// </summary>
     /// <param name="_">The discarded value.</param>
     public static implicit operator Option<TValue>(ValueTask _)
-        => Option.None<TValue>();
+        => new(OptionState.None, default!);
 
     /// <summary>
     /// Implicitly converts <see cref="Nil"/> to <see cref="Option{TValue}"/>.
@@ -92,6 +91,9 @@ public class Option<TValue> :
 
     public static Option<TValue> Some(TValue value)
         => new(OptionState.Some, value);
+
+    public static Option<TValue> From(TValue? value)
+        => Option.IsNone(value) ? None() : Some(value);
 
     public static bool IsValueNone(object? value)
     {
@@ -499,6 +501,27 @@ public class Option<TValue> :
 
     public Result<TValue> ToResult()
         => this.IsNone ? Result.Error<TValue>(new ResultException("No value for option")) : Result.Ok(this.value!);
+
+    public Result<TValue> ToResult(string message)
+        => this.IsNone ? Result.Error<TValue>(new ResultException(message)) : Result.Ok(this.value!);
+
+    public Result<TValue> ToResult(Func<Error> generateError)
+        => this.IsNone ? Result.Error<TValue>(generateError()) : Result.Ok(this.value!);
+
+    public Result<TValue, TError> ToResult<TError>(Func<TError> generateError)
+        => this.IsNone ? new(generateError()) : new(this.value!);
+
+    public ValueResult<TValue> ToValueResult()
+        => this.IsNone ? new(new ResultException("No value for option")) : new(this.value!);
+
+    public ValueResult<TValue> ToValueResult(string message)
+        => this.IsNone ? new(new ResultException(message)) : new(this.value!);
+
+    public ValueResult<TValue> ToValueResult(Func<Error> generateError)
+        => this.IsNone ? new(generateError()) : new(this.value!);
+
+    public ValueResult<TValue, TError> ToValueResult<TError>(Func<TError> generateError)
+        => this.IsNone ? new(generateError()) : new(this.value!);
 
     /// <summary>
     /// Returns the underlying value if it is <c>Some</c>, otherwise, throws

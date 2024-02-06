@@ -13,7 +13,6 @@ public static class Option
 
 #pragma warning disable CS8604 // Possible null reference argument.
     public static Option<T> None<T>()
-        where T : notnull
         => new Option<T>(OptionState.None, default);
 #pragma warning restore CS8604 // Possible null reference argument.
 
